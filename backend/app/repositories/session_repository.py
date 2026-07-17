@@ -1,0 +1,29 @@
+from datetime import datetime, timezone
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app.models.session import UserSession
+
+
+class SessionRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def create(self, code: str, company_id: int) -> UserSession:
+        session = UserSession(code=code, company_id=company_id)
+        self.db.add(session)
+        self.db.flush()
+        return session
+
+    def get_by_code(self, code: str) -> UserSession | None:
+        stmt = select(UserSession).where(UserSession.code == code)
+        return self.db.execute(stmt).scalar_one_or_none()
+
+    def code_exists(self, code: str) -> bool:
+        return self.get_by_code(code) is not None
+
+    def touch(self, session: UserSession) -> UserSession:
+        session.last_accessed_at = datetime.now(timezone.utc)
+        self.db.flush()
+        return session

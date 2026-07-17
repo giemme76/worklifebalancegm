@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Env vars
+.env
+.env.*
+!.env.example
+
+# DB locale
+*.db
+*.sqlite3
+
+# Test/coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Frontend
+node_modules/
+dist/
+build/
+.vite/
+
+# Editor/OS
+.vscode/
+.idea/
+.DS_Store
