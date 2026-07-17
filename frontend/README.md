@@ -22,12 +22,19 @@ mantiene automaticamente, non serve alcun login.
 ## Build di produzione
 
 ```bash
+cp .env.example .env.production
+# imposta VITE_API_BASE_URL=https://tuodominio.tld/api (path del backend su cPanel)
 npm run build
 ```
 
-Genera `dist/`, da pubblicare come sito statico (es. sulla stessa cartella
-del backend su cPanel, o in una sottocartella servita da Apache/Nginx
-davanti al backend Python).
+Genera `dist/`: carica **il contenuto** di quella cartella (non la cartella
+stessa) nella document root del dominio su cPanel — di solito `public_html/`,
+o la sua root se il backend è pubblicato su un path dedicato come `/api`
+tramite Setup Python App (vedi `../backend/README.md`).
+
+Non essendoci routing lato client (un'unica pagina, stati mostrati
+condizionalmente), non serve alcuna regola di riscrittura URL: un hosting
+statico semplice basta.
 
 ## Struttura
 

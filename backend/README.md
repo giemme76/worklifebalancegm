@@ -51,6 +51,11 @@ Passi:
    fare pull/deploy della branch desiderata.
 2. Su cPanel, sezione **Setup Python App**: creare una nuova app con
    - Application root: la cartella `backend/` del repo clonato
+   - Application URL: se frontend e backend condividono lo stesso dominio,
+     assegna al backend un path dedicato, es. `tuodominio.tld/api` (cPanel/
+     Passenger si occupa di instradare le richieste su quel path all'app,
+     che risponde comunque sulle sue rotte "a radice", es. `/session`,
+     `/dashboard` — non serve modificare il codice)
    - Application startup file: `passenger_wsgi.py`
    - Application Entry point: `application`
 3. Nel virtualenv creato da cPanel (il pannello mostra il comando `source
@@ -62,8 +67,12 @@ Passi:
    Python App), in particolare:
    - `DATABASE_URL=mysql+pymysql://utente:password@localhost/nome_db` (DB
      MySQL creato da cPanel > MySQL Databases)
-   - `APP_ENV=production`
-   - `CORS_ORIGINS=https://tuodominio.tld`
+   - `APP_ENV=production` (attiva anche il cookie di sessione `Secure`,
+     necessario perché il sito gira in HTTPS)
+   - `CORS_ORIGINS=https://tuodominio.tld` — se frontend e backend sono
+     sullo **stesso dominio** (stesso path base, es. `/api`), le richieste
+     sono same-origin e il browser non applica CORS: questa variabile serve
+     comunque da rete di sicurezza e per eventuali test da altre origin.
 5. **Restart** dell'app Python da cPanel.
 
 Ad ogni aggiornamento: push su GitHub → pull su cPanel (Git Version Control

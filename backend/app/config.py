@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
 
+    @property
+    def session_cookie_secure(self) -> bool:
+        """Cookie 'Secure' (solo HTTPS) in produzione; disattivo in sviluppo su http://localhost."""
+        return self.app_env == "production"
+
 
 @lru_cache
 def get_settings() -> Settings:
