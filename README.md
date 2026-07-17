@@ -8,7 +8,7 @@ Vedi [docs/OfficePresence.md](docs/OfficePresence.md) per la specifica completa.
 
 ```
 backend/    API FastAPI (Python)
-frontend/   App React (in arrivo)
+frontend/   App React + Tailwind (Vite)
 docs/       Specifica e documentazione
 ```
 
@@ -18,4 +18,4 @@ Vedi [backend/README.md](backend/README.md) per setup locale e note di deploy su
 
 ## Frontend
 
-In sviluppo — verrà collegato all'API del backend.
+Vedi [frontend/README.md](frontend/README.md) per setup locale (`npm install && npm run dev`).
