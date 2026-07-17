@@ -28,6 +28,15 @@ class AttendanceRepository:
         self.db.flush()
         return entry
 
+    def delete_by_session_and_date(self, session_id: int, date: date_type) -> bool:
+        """Rimuove la registrazione di un giorno, se presente. Restituisce True se rimossa."""
+        entry = self.get_by_session_and_date(session_id, date)
+        if entry is None:
+            return False
+        self.db.delete(entry)
+        self.db.flush()
+        return True
+
     def get_by_session_and_date(self, session_id: int, date: date_type) -> AttendanceEntry | None:
         stmt = select(AttendanceEntry).where(
             AttendanceEntry.session_id == session_id, AttendanceEntry.date == date

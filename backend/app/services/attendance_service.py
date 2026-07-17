@@ -25,6 +25,14 @@ def record_attendance(
     return entry
 
 
+def delete_attendance(db: Session, session: UserSession, entry_date: date) -> bool:
+    """Rimuove la registrazione di un giorno (es. 'Rimuovi registrazione' dal bottom sheet)."""
+    repo = AttendanceRepository(db)
+    deleted = repo.delete_by_session_and_date(session.id, entry_date)
+    db.commit()
+    return deleted
+
+
 def get_dashboard(db: Session, session: UserSession, year: int) -> DashboardOut:
     repo = AttendanceRepository(db)
     entries = repo.list_for_year(session.id, year, include_simulated=False)

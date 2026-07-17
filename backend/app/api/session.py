@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import get_current_session
 from app.config import get_settings
 from app.database import get_db
+from app.models.session import UserSession
 from app.schemas.session import SessionCreateRequest, SessionOut
 from app.services.session_service import create_session, get_session_by_code
 
@@ -28,6 +30,15 @@ def create_new_session(
     """Primo accesso: configura l'azienda e crea una nuova sessione login-free."""
     session = create_session(db, data)
     _set_session_cookie(response, session.code)
+    return session
+
+
+@router.get("/session", response_model=SessionOut)
+def read_current_session(session: UserSession = Depends(get_current_session)) -> SessionOut:
+    """Bootstrap: recupera la sessione corrente dal cookie del browser (senza conoscere il codice).
+
+    Usato dal frontend all'avvio per decidere se mostrare l'onboarding o l'app.
+    """
     return session
 
 

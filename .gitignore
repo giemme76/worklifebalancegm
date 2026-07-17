@@ -37,3 +37,7 @@ build/
 .vscode/
 .idea/
 .DS_Store
+
+
+# Export design bundle (non è codice sorgente, tenerlo fuori dal repo)
+/WorkLife Standalone.html

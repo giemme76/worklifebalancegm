@@ -13,7 +13,9 @@ class CompanyRepository:
             name=data.name,
             website=website or data.website,
             headquarters=data.headquarters,
+            policy_type=data.policy_type,
             smart_working_percentage=data.smart_working_percentage,
+            office_days_per_week=data.office_days_per_week,
             work_days_per_week=data.work_days_per_week,
         )
         self.db.add(company)

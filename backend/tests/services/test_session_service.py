@@ -1,3 +1,4 @@
+from app.models.company import PolicyType
 from app.schemas.session import SessionCreateRequest
 from app.services.session_service import create_session, get_session_by_code
 from app.utils.code_generator import generate_session_code, is_valid_code_format
@@ -42,3 +43,17 @@ def test_get_session_by_code_recupera_sessione_esistente(db_session):
 
 def test_get_session_by_code_ritorna_none_per_codice_non_esistente(db_session):
     assert get_session_by_code(db_session, "SW-0000-0000") is None
+
+
+def test_create_session_with_fixed_days_policy(db_session):
+    data = SessionCreateRequest(
+        name="Gamma Ltd",
+        policy_type=PolicyType.FIXED_DAYS,
+        office_days_per_week=3,
+        work_days_per_week=5,
+    )
+    session = create_session(db_session, data)
+
+    assert session.company.policy_type == PolicyType.FIXED_DAYS
+    assert session.company.office_days_per_week == 3
+    assert session.company.smart_working_percentage is None

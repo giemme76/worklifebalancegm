@@ -14,6 +14,7 @@ class AttendanceType(str, enum.Enum):
     VACATION = "VACATION"
     PERMIT = "PERMIT"
     SICK = "SICK"
+    TRAVEL = "TRAVEL"
 
 
 class AttendanceEntry(Base):

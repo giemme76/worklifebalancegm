@@ -9,6 +9,7 @@ class CalendarCounts(BaseModel):
     vacation: int = 0
     permit: int = 0
     sick: int = 0
+    travel: int = 0
 
 
 class CalendarOut(BaseModel):

@@ -38,3 +38,41 @@ def test_create_session_validates_smart_working_percentage(client):
         },
     )
     assert response.status_code == 422
+
+
+def test_create_session_with_fixed_days_policy(client):
+    response = client.post(
+        "/session",
+        json={
+            "name": "Gamma Ltd",
+            "policy_type": "FIXED_DAYS",
+            "office_days_per_week": 3,
+            "work_days_per_week": 5,
+        },
+    )
+    assert response.status_code == 201
+    body = response.json()
+    assert body["company"]["policy_type"] == "FIXED_DAYS"
+    assert body["company"]["office_days_per_week"] == 3
+
+
+def test_create_session_fixed_days_requires_office_days_per_week(client):
+    response = client.post(
+        "/session",
+        json={"name": "Gamma Ltd", "policy_type": "FIXED_DAYS", "work_days_per_week": 5},
+    )
+    assert response.status_code == 422
+
+
+def test_read_current_session_bootstrap_from_cookie(client):
+    created = create_default_session(client)
+
+    response = client.get("/session")
+
+    assert response.status_code == 200
+    assert response.json()["code"] == created["code"]
+
+
+def test_read_current_session_without_cookie_is_unauthorized(client):
+    response = client.get("/session")
+    assert response.status_code == 401

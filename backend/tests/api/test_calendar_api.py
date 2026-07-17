@@ -16,6 +16,7 @@ def test_calendar_counts_entries_by_type(client):
         ("2026-03-05", "VACATION"),
         ("2026-03-06", "PERMIT"),
         ("2026-03-09", "SICK"),
+        ("2026-03-10", "TRAVEL"),
     ]
     for entry_date, entry_type in entries:
         client.post("/attendance", json={"date": entry_date, "type": entry_type})
@@ -25,11 +26,12 @@ def test_calendar_counts_entries_by_type(client):
 
     body = response.json()
     assert body["year"] == 2026
-    assert len(body["entries"]) == 6
+    assert len(body["entries"]) == 7
     assert body["counts"] == {
         "office": 2,
         "smart_working": 1,
         "vacation": 1,
         "permit": 1,
         "sick": 1,
+        "travel": 1,
     }

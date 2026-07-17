@@ -1,13 +1,18 @@
 from datetime import date
 
 from app.models.attendance import AttendanceType
-from app.models.company import Company
+from app.models.company import Company, PolicyType
 from app.models.session import UserSession
 from app.repositories.attendance_repository import AttendanceRepository
 
 
 def make_session(db_session) -> UserSession:
-    company = Company(name="Acme", smart_working_percentage=40, work_days_per_week=5)
+    company = Company(
+        name="Acme",
+        policy_type=PolicyType.PERCENT,
+        smart_working_percentage=40,
+        work_days_per_week=5,
+    )
     db_session.add(company)
     db_session.flush()
 
@@ -63,3 +68,21 @@ def test_list_for_year_filters_by_year(db_session):
 
     assert len(repo.list_for_year(session.id, 2025)) == 1
     assert len(repo.list_for_year(session.id, 2026)) == 1
+
+
+def test_delete_by_session_and_date_removes_entry(db_session):
+    session = make_session(db_session)
+    repo = AttendanceRepository(db_session)
+    repo.upsert(session.id, date(2026, 3, 2), AttendanceType.TRAVEL)
+
+    deleted = repo.delete_by_session_and_date(session.id, date(2026, 3, 2))
+
+    assert deleted is True
+    assert repo.get_by_session_and_date(session.id, date(2026, 3, 2)) is None
+
+
+def test_delete_by_session_and_date_returns_false_if_missing(db_session):
+    session = make_session(db_session)
+    repo = AttendanceRepository(db_session)
+
+    assert repo.delete_by_session_and_date(session.id, date(2026, 3, 2)) is False
