@@ -26,7 +26,10 @@ npm run build
 
 echo "==> Pubblica i file statici in ${PUBLIC_TARGET}"
 mkdir -p "$PUBLIC_TARGET"
-rm -rf "${PUBLIC_TARGET:?}"/*
+# Rimuove SOLO i file generati dalla build precedente (mai l'intera cartella:
+# "${PUBLIC_TARGET}/api" contiene il routing verso Passenger creato da cPanel
+# per il backend e non va mai toccato da qui).
+rm -rf "${PUBLIC_TARGET:?}/assets" "${PUBLIC_TARGET:?}/index.html"
 cp -r dist/* "$PUBLIC_TARGET"/
 
 echo "==> Fatto."
