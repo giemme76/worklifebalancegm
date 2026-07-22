@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
+import logo from "../../img/worklife-logo-header.png";
 import StepCompany from "./StepCompany.jsx";
 import StepPolicy from "./StepPolicy.jsx";
 import StepSummary from "./StepSummary.jsx";
@@ -41,11 +42,8 @@ export default function OnboardingFlow() {
 
   return (
     <div className="flex flex-col h-full px-[22px] py-6 overflow-y-auto">
-      <div className="flex items-center gap-2 mb-7">
-        <div className="w-[26px] h-[26px] rounded-lg bg-office relative shrink-0">
-          <div className="absolute -right-1 -bottom-1 w-3.5 h-3.5 rounded-[5px] bg-ink" />
-        </div>
-        <div className="font-extrabold text-base tracking-tight">WorkLife</div>
+      <div className="flex items-center mb-7">
+        <img src={logo} alt="WorkLife Balance GM" className="h-8 w-auto" />
       </div>
 
       <div className="flex gap-1.5 mb-7">
