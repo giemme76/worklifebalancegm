@@ -10,8 +10,8 @@ class SessionRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, code: str, company_id: int) -> UserSession:
-        session = UserSession(code=code, company_id=company_id)
+    def create(self, code: str, company_id: int, nickname: str | None = None) -> UserSession:
+        session = UserSession(code=code, company_id=company_id, nickname=nickname)
         self.db.add(session)
         self.db.flush()
         return session

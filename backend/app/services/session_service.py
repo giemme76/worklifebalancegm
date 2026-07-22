@@ -30,7 +30,8 @@ def create_session(db: Session, data: SessionCreateRequest) -> UserSession:
 
     company = company_repo.create(data, website=website)
     code = _generate_unique_code(session_repo)
-    session = session_repo.create(code=code, company_id=company.id)
+    nickname = data.nickname.strip() if data.nickname and data.nickname.strip() else None
+    session = session_repo.create(code=code, company_id=company.id, nickname=nickname)
 
     db.commit()
     db.refresh(session)

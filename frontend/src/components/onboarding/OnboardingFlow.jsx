@@ -9,6 +9,7 @@ export default function OnboardingFlow() {
   const { completeOnboarding } = useSession();
 
   const [step, setStep] = useState(1);
+  const [nickname, setNickname] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [detected, setDetected] = useState(false);
   const [city, setCity] = useState("");
@@ -25,6 +26,7 @@ export default function OnboardingFlow() {
     setSubmitError(null);
     try {
       await completeOnboarding({
+        nickname: nickname.trim() || undefined,
         name: companyName.trim(),
         headquarters: city || undefined,
         policy_type: policyType,
@@ -57,6 +59,8 @@ export default function OnboardingFlow() {
 
       {step === 1 && (
         <StepCompany
+          nickname={nickname}
+          setNickname={setNickname}
           companyName={companyName}
           setCompanyName={setCompanyName}
           detected={detected}

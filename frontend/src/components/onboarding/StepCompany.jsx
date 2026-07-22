@@ -4,6 +4,8 @@ import { api } from "../../api/client.js";
 const SEARCH_DEBOUNCE_MS = 400;
 
 export default function StepCompany({
+  nickname,
+  setNickname,
   companyName,
   setCompanyName,
   detected,
@@ -79,6 +81,31 @@ export default function StepCompany({
 
   return (
     <div className="flex flex-col flex-1">
+      <div className="flex flex-col gap-1.5 px-4 py-3.5 rounded-2xl bg-office-soft mb-6">
+        <div className="text-[13px] font-bold text-ink">Cos'è WorkLife</div>
+        <div className="text-xs text-muted leading-relaxed">
+          Ti aiuta a tenere traccia delle giornate in ufficio e in smart working, a capire
+          a colpo d'occhio se sei in linea con la policy aziendale e a organizzare le
+          settimane in anticipo.
+        </div>
+      </div>
+
+      <div className="text-2xl font-extrabold tracking-tight leading-tight mb-2">
+        Come ti chiami?
+      </div>
+      <div className="text-sm text-muted leading-relaxed mb-3.5">
+        Useremo il tuo nome per personalizzare l'app (facoltativo).
+      </div>
+
+      <input
+        type="text"
+        placeholder="Es. Guido"
+        value={nickname}
+        onChange={(e) => setNickname(e.target.value)}
+        className="w-full px-4 py-3.5 rounded-2xl border-[1.5px] border-line text-base font-semibold
+                   text-ink bg-surface outline-none mb-6 focus:border-ink transition-colors"
+      />
+
       <div className="text-2xl font-extrabold tracking-tight leading-tight mb-2">
         Qual è la tua azienda?
       </div>

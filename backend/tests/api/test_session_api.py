@@ -12,6 +12,21 @@ def test_create_session_returns_code_and_sets_cookie(client):
     assert client.cookies.get("officepresence_session") == body["code"]
 
 
+def test_create_session_stores_and_returns_nickname(client):
+    body = create_default_session(client, nickname="Guido")
+    assert body["nickname"] == "Guido"
+
+
+def test_create_session_nickname_is_optional(client):
+    body = create_default_session(client)
+    assert body["nickname"] is None
+
+
+def test_create_session_trims_blank_nickname_to_none(client):
+    body = create_default_session(client, nickname="   ")
+    assert body["nickname"] is None
+
+
 def test_recover_session_by_code(client):
     created = create_default_session(client)
 

@@ -14,6 +14,11 @@ class UserSession(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     code: Mapped[str] = mapped_column(String(32), unique=True, index=True, nullable=False)
 
+    # Nome/nickname della persona che usa questo codice (una sessione = una
+    # persona, non l'intera azienda): opzionale, usato per personalizzare i
+    # saluti nell'app.
+    nickname: Mapped[str | None] = mapped_column(String(120), nullable=True)
+
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -30,6 +30,38 @@ def test_create_session_generates_unique_code_and_company(db_session):
     assert session.company.smart_working_percentage == 40
 
 
+def test_create_session_stores_trimmed_nickname(db_session):
+    data = SessionCreateRequest(
+        name="Acme S.r.l.",
+        nickname="  Guido  ",
+        smart_working_percentage=40,
+        work_days_per_week=5,
+    )
+    session = create_session(db_session, data)
+    assert session.nickname == "Guido"
+
+
+def test_create_session_blank_nickname_is_stored_as_none(db_session):
+    data = SessionCreateRequest(
+        name="Acme S.r.l.",
+        nickname="   ",
+        smart_working_percentage=40,
+        work_days_per_week=5,
+    )
+    session = create_session(db_session, data)
+    assert session.nickname is None
+
+
+def test_create_session_without_nickname_is_none(db_session):
+    data = SessionCreateRequest(
+        name="Acme S.r.l.",
+        smart_working_percentage=40,
+        work_days_per_week=5,
+    )
+    session = create_session(db_session, data)
+    assert session.nickname is None
+
+
 def test_get_session_by_code_recupera_sessione_esistente(db_session):
     data = SessionCreateRequest(name="Beta SpA", smart_working_percentage=30, work_days_per_week=5)
     created = create_session(db_session, data)
