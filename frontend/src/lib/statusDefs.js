@@ -70,7 +70,7 @@ export const PACE_META = {
 // Stessi valori oklch di tailwind.config.js, per gli usi che richiedono un valore CSS
 // letterale (es. conic-gradient inline), dove le classi Tailwind non bastano.
 export const PACE_COLOR_VALUES = {
-  green: "oklch(0.56 0.11 160)",
+  green: "oklch(0.50 0.08 151)",
   orange: "oklch(0.68 0.14 55)",
   red: "oklch(0.58 0.16 25)",
 };

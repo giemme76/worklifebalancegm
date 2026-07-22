@@ -13,7 +13,8 @@ export default {
         muted: "oklch(0.55 0.012 70)",
         line: "oklch(0.9 0.008 70)",
 
-        office: { DEFAULT: "oklch(0.56 0.11 160)", soft: "oklch(0.94 0.03 160)" },
+        // Verde ripreso dal logo (WorkLifeBalanceGM-logo.png).
+        office: { DEFAULT: "oklch(0.50 0.08 151)", soft: "oklch(0.94 0.03 151)" },
         smart: { DEFAULT: "oklch(0.6 0.09 210)", soft: "oklch(0.94 0.025 210)" },
         vacation: { DEFAULT: "oklch(0.72 0.1 85)", soft: "oklch(0.95 0.03 85)" },
         permit: { DEFAULT: "oklch(0.62 0.07 300)", soft: "oklch(0.94 0.02 300)" },
@@ -21,8 +22,8 @@ export default {
         travel: { DEFAULT: "oklch(0.62 0.08 265)", soft: "oklch(0.94 0.02 265)" },
 
         pace: {
-          green: "oklch(0.56 0.11 160)",
-          "green-soft": "oklch(0.94 0.03 160)",
+          green: "oklch(0.50 0.08 151)",
+          "green-soft": "oklch(0.94 0.03 151)",
           orange: "oklch(0.68 0.14 55)",
           "orange-soft": "oklch(0.95 0.04 55)",
           red: "oklch(0.58 0.16 25)",
