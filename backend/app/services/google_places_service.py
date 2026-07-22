@@ -1,4 +1,4 @@
-"""Integrazione con Google Places API ("New") per la ricerca aziende.
+"""Integrazione con Google Places API (versione "legacy") per la ricerca aziende.
 
 Usata in due punti:
 - endpoint interattivo `GET /company/search` (onboarding: l'utente digita il
@@ -6,12 +6,22 @@ Usata in due punti:
 - `company_lookup_service.lookup_company`, come fallback automatico quando
   l'utente non specifica un sito web, per proporre sede e sito plausibili.
 
+Usiamo la Places API "classica" (Text Search, `maps.googleapis.com/maps/api/
+place/textsearch/json`) invece della più recente "Places API (New)": è quella
+già abilitata sul progetto Google Cloud della chiave in uso (la stessa
+condivisa con l'admin di energm), evitando di dover abilitare un secondo
+prodotto Google separato. Il rovescio della medaglia: il Text Search legacy
+non restituisce indirizzo strutturato né sito web, quindi la città viene
+dedotta con un'euristica sull'indirizzo formattato e il sito resta a carico
+del fallback su slug in `company_lookup_service`.
+
 Richiede `GOOGLE_MAPS_API_KEY` in ambiente. Se assente, le funzioni
 restituiscono una lista vuota (nessuna eccezione): l'onboarding resta
 utilizzabile anche senza integrazione configurata.
 """
 
 import logging
+import re
 
 import httpx
 
@@ -19,57 +29,50 @@ from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-_PLACES_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
-
-# Chiediamo solo i campi che usiamo: riduce la fascia di prezzo Places API
-# ("Text Search - Basic" invece di includere foto, orari, ecc.).
-_FIELD_MASK = ",".join(
-    [
-        "places.id",
-        "places.displayName",
-        "places.formattedAddress",
-        "places.addressComponents",
-        "places.websiteUri",
-        "places.rating",
-        "places.location",
-    ]
-)
+_TEXT_SEARCH_URL = "https://maps.googleapis.com/maps/api/place/textsearch/json"
 
 _REQUEST_TIMEOUT_SECONDS = 8.0
 
+# Indirizzi italiani formattati da Google hanno tipicamente la forma
+# "Via Roma 1, 20100 Milano MI, Italia": catturiamo il testo tra il CAP
+# (5 cifre) e la sigla provincia (2 lettere maiuscole).
+_CITY_FROM_ADDRESS_PATTERN = re.compile(r"\b\d{5}\s+(.+?)\s+[A-Z]{2}\b")
+
+# Status che rappresentano "nessun errore" per il Text Search legacy: una
+# ricerca senza risultati non è un errore da segnalare come tale.
+_OK_STATUSES = {"OK", "ZERO_RESULTS"}
+
 
 class GooglePlacesError(Exception):
-    """Errore di rete/HTTP nella chiamata a Google Places."""
+    """Errore di rete/HTTP/status nella chiamata a Google Places."""
 
 
-def _extract_city(place: dict) -> str | None:
-    for component in place.get("addressComponents", []):
-        if "locality" in component.get("types", []):
-            return component.get("longText")
-    # Fallback: alcuni comuni minori sono classificati come
-    # "administrative_area_level_3" invece di "locality".
-    for component in place.get("addressComponents", []):
-        if "administrative_area_level_3" in component.get("types", []):
-            return component.get("longText")
-    return None
+def _extract_city(formatted_address: str | None) -> str | None:
+    if not formatted_address:
+        return None
+    match = _CITY_FROM_ADDRESS_PATTERN.search(formatted_address)
+    return match.group(1).strip() if match else None
 
 
 def _parse_place(place: dict) -> dict:
-    location = place.get("location") or {}
+    location = (place.get("geometry") or {}).get("location") or {}
+    address = place.get("formatted_address")
     return {
-        "place_id": place.get("id"),
-        "name": (place.get("displayName") or {}).get("text"),
-        "address": place.get("formattedAddress"),
-        "city": _extract_city(place),
-        "website": place.get("websiteUri"),
+        "place_id": place.get("place_id"),
+        "name": place.get("name"),
+        "address": address,
+        "city": _extract_city(address),
+        # Non disponibile nel Text Search legacy senza una chiamata aggiuntiva
+        # a Place Details: il sito viene proposto altrove via slug fallback.
+        "website": None,
         "rating": place.get("rating"),
-        "lat": location.get("latitude"),
-        "lng": location.get("longitude"),
+        "lat": location.get("lat"),
+        "lng": location.get("lng"),
     }
 
 
-def search_companies(query: str, *, region_code: str = "IT", max_results: int = 8) -> list[dict]:
-    """Cerca aziende/sedi per nome tramite Google Places Text Search.
+def search_companies(query: str, *, region_code: str = "it", max_results: int = 8) -> list[dict]:
+    """Cerca aziende/sedi per nome tramite Google Places Text Search (legacy).
 
     Restituisce una lista di dict (place_id, name, address, city, website,
     rating, lat, lng). Lista vuota se la chiave API non è configurata o se
@@ -80,36 +83,33 @@ def search_companies(query: str, *, region_code: str = "IT", max_results: int = 
         return []
 
     try:
-        response = httpx.post(
-            _PLACES_SEARCH_URL,
-            json={
-                "textQuery": query,
-                "regionCode": region_code,
-                "maxResultCount": max_results,
-            },
-            headers={
-                "Content-Type": "application/json",
-                "X-Goog-Api-Key": settings.google_maps_api_key,
-                "X-Goog-FieldMask": _FIELD_MASK,
+        response = httpx.get(
+            _TEXT_SEARCH_URL,
+            params={
+                "query": query,
+                "region": region_code,
+                "key": settings.google_maps_api_key,
             },
             timeout=_REQUEST_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
-    except httpx.HTTPStatusError as exc:
-        # Logghiamo status + corpo della risposta di Google: è l'unico modo per
-        # distinguere "chiave non valida", "API non abilitata sul progetto",
-        # "billing disattivato" o "quota superata", che altrimenti l'endpoint
-        # nasconde restituendo semplicemente una lista vuota.
-        logger.warning(
-            "Google Places ha risposto %s per query %r: %s",
-            exc.response.status_code,
-            query,
-            exc.response.text[:1000],
-        )
-        raise GooglePlacesError(f"Errore chiamata Google Places: {exc}") from exc
     except httpx.HTTPError as exc:
         logger.warning("Errore di rete verso Google Places per query %r: %s", query, exc)
         raise GooglePlacesError(f"Errore chiamata Google Places: {exc}") from exc
 
     data = response.json()
-    return [_parse_place(place) for place in data.get("places", [])]
+    status = data.get("status")
+    if status not in _OK_STATUSES:
+        # Logghiamo status + error_message: è l'unico modo per distinguere
+        # "chiave non valida", "API non abilitata", "billing disattivato" o
+        # "quota superata", che altrimenti l'endpoint nasconde restituendo
+        # semplicemente una lista vuota.
+        logger.warning(
+            "Google Places ha risposto status=%s per query %r: %s",
+            status,
+            query,
+            data.get("error_message"),
+        )
+        raise GooglePlacesError(f"Google Places status={status}: {data.get('error_message')}")
+
+    return [_parse_place(place) for place in data.get("results", [])[:max_results]]
