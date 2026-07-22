@@ -1,7 +1,9 @@
-# OfficePresence — Frontend
+# WorkLifeBalanceGM — Frontend
 
-App React (Vite + Tailwind) fedele al design "WorkLifeBalanceGM": onboarding in 3 step,
-poi Dashboard / Calendario / Simulazione, collegata alle API del backend.
+App React (Vite + Tailwind) fedele al design "WorkLifeBalanceGM": onboarding in 3 step
+(nome/nickname, azienda con ricerca Google Places, policy, riepilogo con
+codice di recupero), poi Dashboard / Calendario / Simulazione, collegata alle
+API del backend.
 
 ## Setup locale
 
@@ -43,29 +45,27 @@ src/
   api/client.js          wrapper fetch verso il backend (cookie di sessione incluso)
   context/                stato sessione + cache dashboard/calendario per anno
   lib/                    utility pure: date, stati presenza, palette, anteprima onboarding
-  components/onboarding/  wizard 3 step (azienda, policy, riepilogo)
-  components/app/         shell con tab bar, Dashboard, Calendario, Simulazione, bottom sheet
+  components/onboarding/  wizard 3 step (nome/azienda, policy, riepilogo) + schermata
+                           post-creazione col codice di recupero
+  components/app/         shell con tab bar, Dashboard, Calendario, Simulazione, bottom
+                           sheet, pannello sessione (codice + eliminazione dati)
+  components/Footer.jsx   credito "Realizzato da Giemme76", visibile in ogni schermata
+  img/                    logo WorkLifeBalanceGM
 ```
 
 ## Palette e stati
 
-Colori e tipografia (Manrope) riprendono il design originale; le 6
-tipologie di presenza (Ufficio, Smart working, Ferie, Permesso, Malattia,
-Trasferta) e il semaforo di andamento (verde/arancio/rosso) sono definiti
-una sola volta in `tailwind.config.js` e `src/lib/statusDefs.js`.
+Colori e tipografia (Manrope) riprendono il design originale, con il verde
+principale allineato al logo (`src/img/`); le 6 tipologie di presenza
+(Ufficio, Smart working, Ferie, Permesso, Malattia, Trasferta) e il semaforo
+di andamento (verde/arancio/rosso) sono definiti una sola volta in
+`tailwind.config.js` e `src/lib/statusDefs.js`.
 
-## Nota sull'ambiente di sviluppo di questa sessione
+## Sessione: recupero ed eliminazione
 
-Il codice è stato scritto e rivisto manualmente, ma in questo sandbox
-`npm run build` non è stato eseguibile fino in fondo (il binario nativo di
-esbuild va in segmentation fault nell'ambiente isolato usato qui — un
-limite dell'infrastruttura, non del codice). Prima di considerare il
-frontend pronto, esegui in locale:
-
-```bash
-npm install
-npm run build
-```
-
-e segnala eventuali errori: si risolvono rapidamente avendo un ambiente che
-esegue esbuild normalmente.
+Ogni sessione ha un codice univoco (`SW-XXXX-XXXX`) mostrato una sola volta
+subito dopo l'onboarding: è l'unico modo per recuperare i dati se il cookie
+scade o si cambia dispositivo/browser ("Ho già un codice" nello step 1).
+Cliccando sul badge col nickname nell'header dell'app si riapre lo stesso
+codice, con un pulsante per eliminare definitivamente la sessione e tutti i
+dati collegati.

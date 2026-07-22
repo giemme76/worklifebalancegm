@@ -1,4 +1,4 @@
-# OfficePresence — Backend
+# WorkLifeBalanceGM — Backend
 
 API FastAPI per il monitoraggio delle presenze ufficio/smart working.
 
@@ -15,6 +15,12 @@ uvicorn app.main:app --reload
 
 API disponibile su `http://localhost:8000` (docs interattive su `/docs`).
 In sviluppo usa SQLite in locale (`officepresence.db`), nessun DB esterno richiesto.
+
+Per la ricerca aziende in onboarding (`GET /company/search`, Google Places
+Text Search legacy) serve una `GOOGLE_MAPS_API_KEY` valida nel `.env` locale
+(mai committarla: `.env` è già in `.gitignore`, in `.env.example` c'è solo il
+placeholder). Senza chiave l'endpoint torna semplicemente risultati vuoti,
+l'app resta comunque utilizzabile.
 
 ## Test
 
@@ -41,47 +47,49 @@ tests/              test pytest, stessa struttura di app/
 
 ## Deploy su hosting cPanel
 
-Il flusso previsto: push su GitHub dal proprio ambiente locale, poi pull
-dell'hosting cPanel tramite "Git Version Control" (o SSH), e servizio
-dell'app Python tramite **Setup Python App** (Passenger).
+Setup in uso: repo clonato **fuori** da `public_html` (es.
+`~/worklifebalancegm-app`), backend pubblicato con **Setup Python App**
+(Passenger) su un path dedicato (es. `tuodominio.tld/api`), frontend buildato
+e pubblicato come file statici sotto `public_html/` da `../deploy.sh` (vedi
+README alla radice del repo).
 
-Passi:
+Setup iniziale:
 
-1. Su cPanel, sezione **Git Version Control**: aggiungere il repository e
-   fare pull/deploy della branch desiderata.
+1. Clonare il repo sul server, fuori da `public_html`.
 2. Su cPanel, sezione **Setup Python App**: creare una nuova app con
    - Application root: la cartella `backend/` del repo clonato
-   - Application URL: se frontend e backend condividono lo stesso dominio,
-     assegna al backend un path dedicato, es. `tuodominio.tld/api` (cPanel/
-     Passenger si occupa di instradare le richieste su quel path all'app,
-     che risponde comunque sulle sue rotte "a radice", es. `/session`,
-     `/dashboard` — non serve modificare il codice)
+   - Application URL: path dedicato, es. `tuodominio.tld/api` (Passenger
+     instrada le richieste su quel path all'app, che risponde comunque sulle
+     sue rotte "a radice", es. `/session`, `/dashboard` — non serve
+     modificare il codice)
    - Application startup file: `passenger_wsgi.py`
    - Application Entry point: `application`
 3. Nel virtualenv creato da cPanel (il pannello mostra il comando `source
-   .../bin/activate`):
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Impostare le variabili d'ambiente (tab **Environment variables** della
-   Python App), in particolare:
-   - `DATABASE_URL=mysql+pymysql://utente:password@localhost/nome_db` (DB
-     MySQL creato da cPanel > MySQL Databases)
-   - `APP_ENV=production` (attiva anche il cookie di sessione `Secure`,
-     necessario perché il sito gira in HTTPS)
-   - `CORS_ORIGINS=https://tuodominio.tld` — se frontend e backend sono
-     sullo **stesso dominio** (stesso path base, es. `/api`), le richieste
-     sono same-origin e il browser non applica CORS: questa variabile serve
-     comunque da rete di sicurezza e per eventuali test da altre origin.
+   .../bin/activate`): `pip install -r requirements.txt`.
+4. Variabili d'ambiente (tab **Environment variables** della Python App):
+   - `DATABASE_URL=mysql+pymysql://utente:password@localhost/nome_db`
+   - `APP_ENV=production` (attiva il cookie di sessione `Secure`)
+   - `CORS_ORIGINS=https://tuodominio.tld`
+   - `GOOGLE_MAPS_API_KEY=...` (per la ricerca aziende in onboarding)
 5. **Restart** dell'app Python da cPanel.
 
-Ad ogni aggiornamento: push su GitHub → pull su cPanel (Git Version Control
-può farlo automaticamente o manualmente) → se sono cambiate le dipendenze,
-`pip install -r requirements.txt` → **Restart** app.
+Ad ogni aggiornamento: push su GitHub dal locale → `git pull` sul terminale
+cPanel, dalla cartella del repo → se sono cambiate le dipendenze Python,
+`pip install -r requirements.txt` nel virtualenv → **Restart** app da cPanel.
 
-`passenger_wsgi.py` adatta l'app ASGI di FastAPI al modello WSGI richiesto
-da Passenger, tramite la libreria `a2wsgi`.
+**Attenzione:** ricreare l'app da "Setup Python App" sovrascrive
+`passenger_wsgi.py` con uno stub generico di cPanel. Se succede, ripristinarlo
+con `git checkout -- passenger_wsgi.py` (deve contenere l'adattamento ASGI→WSGI
+tramite `a2wsgi`, non lo stub).
 
-Nota: `init_db()` crea le tabelle mancanti all'avvio (comodo in sviluppo).
-In produzione, su un DB già popolato, valutare migrazioni esplicite (es.
-Alembic) prima di introdurre modifiche allo schema.
+**Attenzione:** `init_db()` crea solo le tabelle **mancanti** all'avvio, non
+altera quelle già esistenti. Ogni volta che si aggiunge una colonna a un
+modello (es. `UserSession.nickname`), su un DB di produzione già popolato va
+applicata a mano, altrimenti l'endpoint che la usa risponde 500:
+
+```sql
+ALTER TABLE nome_tabella ADD COLUMN nome_colonna TIPO NULL;
+```
+
+In alternativa, valutare migrazioni esplicite (es. Alembic) prima di
+introdurre ulteriori modifiche allo schema.
