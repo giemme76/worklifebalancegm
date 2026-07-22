@@ -45,7 +45,7 @@ export default function OnboardingFlow() {
   return (
     <div className="flex flex-col h-full px-[22px] py-6 overflow-y-auto">
       <div className="flex items-center mb-7">
-        <img src={logo} alt="WorkLife Balance GM" className="h-8 w-auto" />
+        <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
       </div>
 
       <div className="flex gap-1.5 mb-7">

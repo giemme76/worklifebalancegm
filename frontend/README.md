@@ -1,6 +1,6 @@
 # OfficePresence — Frontend
 
-App React (Vite + Tailwind) fedele al design "WorkLife": onboarding in 3 step,
+App React (Vite + Tailwind) fedele al design "WorkLifeBalanceGM": onboarding in 3 step,
 poi Dashboard / Calendario / Simulazione, collegata alle API del backend.
 
 ## Setup locale

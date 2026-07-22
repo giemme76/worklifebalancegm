@@ -82,7 +82,7 @@ export default function StepCompany({
   return (
     <div className="flex flex-col flex-1">
       <div className="flex flex-col gap-1.5 px-4 py-3.5 rounded-2xl bg-office-soft mb-6">
-        <div className="text-[13px] font-bold text-ink">Cos'è WorkLife</div>
+        <div className="text-[13px] font-bold text-ink">Cos'è WorkLifeBalanceGM</div>
         <div className="text-xs text-muted leading-relaxed">
           Ti aiuta a tenere traccia delle giornate in ufficio e in smart working, a capire
           a colpo d'occhio se sei in linea con la policy aziendale e a organizzare le
