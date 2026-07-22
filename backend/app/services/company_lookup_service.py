@@ -1,13 +1,16 @@
 """Ricerca automatica (best-effort) di sito aziendale e sede principale.
 
-Implementazione attuale: euristica locale basata sul nome azienda, senza
-chiamate esterne. In una versione futura questo servizio potrà integrare
-una vera ricerca web o un provider tipo Clearbit/Companies House.
+Usa Google Places (vedi `google_places_service`) per proporre il primo
+risultato plausibile quando l'utente non specifica un sito web in
+onboarding. Se la chiave API non è configurata o Google non trova nulla,
+ricade su un'euristica locale (slug del nome) senza sede suggerita, così
+l'onboarding resta sempre utilizzabile.
 """
 
 import re
 
 from app.schemas.company import CompanyLookupResponse
+from app.services.google_places_service import GooglePlacesError, search_companies
 
 # Forme comuni di ragione sociale da rimuovere prima di generare lo slug
 # (gestisce sia "S.r.l." puntato che "Srl"/"SpA" senza punti).
@@ -23,7 +26,18 @@ def _slugify(name: str) -> str:
 
 
 def lookup_company(name: str) -> CompanyLookupResponse:
-    """Propone un dominio plausibile. La sede principale non è ancora determinabile
-    senza un'integrazione esterna: viene restituita None (l'utente la conferma a mano)."""
+    """Propone sito e sede principale in base al primo risultato Google Places
+    per il nome azienda. Se non disponibile, propone solo un dominio plausibile
+    (nessuna sede: l'utente la conferma a mano)."""
+    try:
+        results = search_companies(name)
+    except GooglePlacesError:
+        results = []
+
+    if results:
+        best = results[0]
+        website = best.get("website") or f"https://www.{_slugify(name)}.com"
+        return CompanyLookupResponse(website=website, suggested_headquarters=best.get("city"))
+
     slug = _slugify(name)
     return CompanyLookupResponse(website=f"https://www.{slug}.com", suggested_headquarters=None)

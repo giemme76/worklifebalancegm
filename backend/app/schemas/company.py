@@ -10,6 +10,23 @@ class CompanyLookupResponse(BaseModel):
     suggested_headquarters: str | None = None
 
 
+class CompanySearchResult(BaseModel):
+    """Un candidato restituito da Google Places per un nome azienda."""
+
+    place_id: str
+    name: str
+    address: str | None = None
+    city: str | None = None
+    website: str | None = None
+    rating: float | None = None
+    lat: float | None = None
+    lng: float | None = None
+
+
+class CompanySearchResponse(BaseModel):
+    results: list[CompanySearchResult]
+
+
 class CompanyOut(BaseModel):
     id: int
     name: str

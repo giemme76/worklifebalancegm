@@ -1,4 +1,7 @@
-import { CITIES } from "../../lib/cities.js";
+import { useEffect, useRef, useState } from "react";
+import { api } from "../../api/client.js";
+
+const SEARCH_DEBOUNCE_MS = 400;
 
 export default function StepCompany({
   companyName,
@@ -9,22 +12,70 @@ export default function StepCompany({
   setCity,
   onNext,
 }) {
+  const [results, setResults] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [searching, setSearching] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
+  const debounceRef = useRef(null);
+  const requestIdRef = useRef(0);
+
+  const runSearch = (value) => {
+    const requestId = ++requestIdRef.current;
+    setSearching(true);
+    setSearchFailed(false);
+    api
+      .searchCompany(value)
+      .then((data) => {
+        if (requestId !== requestIdRef.current) return; // risposta di una ricerca superata
+        const found = data?.results || [];
+        setResults(found);
+        setSelectedIndex(0);
+        setDetected(found.length > 0);
+        setCity(found[0]?.city || "");
+      })
+      .catch(() => {
+        if (requestId !== requestIdRef.current) return;
+        setResults([]);
+        setDetected(false);
+        setCity("");
+        setSearchFailed(true);
+      })
+      .finally(() => {
+        if (requestId === requestIdRef.current) setSearching(false);
+      });
+  };
+
   const onChange = (e) => {
     const value = e.target.value;
     setCompanyName(value);
-    const isDetected = value.trim().length > 2;
-    setDetected(isDetected);
-    if (isDetected && !city) {
-      setCity(CITIES[value.trim().length % CITIES.length]);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const trimmed = value.trim();
+    if (trimmed.length <= 2) {
+      requestIdRef.current += 1; // invalida eventuali ricerche in corso
+      setResults([]);
+      setDetected(false);
+      setSearching(false);
+      setSearchFailed(false);
+      setCity("");
+      return;
     }
-    if (!isDetected) setCity("");
+
+    debounceRef.current = setTimeout(() => runSearch(trimmed), SEARCH_DEBOUNCE_MS);
   };
+
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
 
   const cycleCity = () => {
-    setCity(CITIES[(CITIES.indexOf(city) + 1) % CITIES.length]);
+    if (results.length === 0) return;
+    const next = (selectedIndex + 1) % results.length;
+    setSelectedIndex(next);
+    setCity(results[next].city || "");
   };
 
-  const disabled = !(companyName.trim() && detected);
+  const manualCityEntry = companyName.trim().length > 2 && !searching && results.length === 0;
+  const disabled = !(companyName.trim() && (detected ? city : city.trim()));
 
   return (
     <div className="flex flex-col flex-1">
@@ -44,22 +95,44 @@ export default function StepCompany({
                    text-ink bg-surface outline-none mb-3.5 focus:border-ink transition-colors"
       />
 
-      {detected && (
+      {searching && <div className="text-xs text-muted mb-3.5 px-1">Ricerca in corso…</div>}
+
+      {detected && results.length > 0 && (
         <div className="flex items-center gap-2.5 px-4 py-3.5 rounded-2xl bg-office-soft mb-3.5 animate-wl-fade">
           <div className="w-2.5 h-2.5 rounded-full bg-office shrink-0" />
           <div className="flex-1">
-            <div className="text-[13px] font-bold">Sede rilevata: {city}</div>
+            <div className="text-[13px] font-bold">Sede rilevata: {city || "—"}</div>
             <div className="text-xs text-muted">
-              Sede aziendale principale, individuata automaticamente
+              {results[selectedIndex]?.name}
+              {results[selectedIndex]?.address ? ` — ${results[selectedIndex].address}` : ""}
             </div>
           </div>
-          <button
-            onClick={cycleCity}
-            className="border-none bg-transparent text-xs font-bold text-office cursor-pointer px-1"
-            type="button"
-          >
-            Cambia
-          </button>
+          {results.length > 1 && (
+            <button
+              onClick={cycleCity}
+              className="border-none bg-transparent text-xs font-bold text-office cursor-pointer px-1"
+              type="button"
+            >
+              Cambia
+            </button>
+          )}
+        </div>
+      )}
+
+      {manualCityEntry && (
+        <div className="flex flex-col gap-1.5 px-4 py-3.5 rounded-2xl bg-surface border-[1.5px] border-line mb-3.5">
+          <div className="text-[13px] font-bold">
+            {searchFailed ? "Ricerca non disponibile" : "Nessuna sede trovata automaticamente"}
+          </div>
+          <div className="text-xs text-muted mb-1.5">Inserisci la città della sede principale</div>
+          <input
+            type="text"
+            placeholder="Es. Milano"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-line text-sm font-semibold
+                       text-ink bg-white outline-none focus:border-ink transition-colors"
+          />
         </div>
       )}
 

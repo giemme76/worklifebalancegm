@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -7,6 +9,18 @@ from sqlalchemy.pool import StaticPool
 from app import models  # noqa: F401  (registra i modelli su Base)
 from app.database import Base, get_db
 from app.main import app
+from app.services import google_places_service
+
+
+@pytest.fixture(autouse=True)
+def _disable_google_places_by_default(monkeypatch):
+    """Nessuna chiamata di rete reale nei test: senza questo, un `.env` locale
+    con una chiave Google valida farebbe partire richieste HTTP vere durante
+    la suite (es. via lookup_company in create_session). I test che vogliono
+    verificare l'integrazione mockano esplicitamente search_companies/get_settings."""
+    monkeypatch.setattr(
+        google_places_service, "get_settings", lambda: SimpleNamespace(google_maps_api_key="")
+    )
 
 
 @pytest.fixture()

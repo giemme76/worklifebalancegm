@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import attendance, calendar, dashboard, session, simulation
+from app.api import attendance, calendar, company, dashboard, session, simulation
 from app.config import get_settings
 from app.database import init_db
 
@@ -30,6 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(session.router)
+app.include_router(company.router)
 app.include_router(dashboard.router)
 app.include_router(attendance.router)
 app.include_router(calendar.router)

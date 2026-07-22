@@ -18,6 +18,11 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
+    # Chiave API Google Maps/Places, usata per la ricerca aziende in onboarding
+    # (Places API "New" - Text Search). Se vuota, la ricerca è disattivata e si
+    # torna all'euristica locale (nessuna sede suggerita).
+    google_maps_api_key: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
