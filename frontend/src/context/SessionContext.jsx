@@ -4,7 +4,7 @@ import { api, ApiError } from "../api/client.js";
 const SessionContext = createContext(null);
 
 export function SessionProvider({ children }) {
-  // 'loading' | 'onboarding' | 'app'
+  // 'loading' | 'onboarding' | 'welcome' | 'app'
   const [status, setStatus] = useState("loading");
   const [session, setSession] = useState(null);
   const [error, setError] = useState(null);
@@ -55,8 +55,20 @@ export function SessionProvider({ children }) {
   const completeOnboarding = useCallback(async (companySetup) => {
     const created = await api.createSession(companySetup);
     setSession(created);
-    setStatus("app");
+    // Prima di entrare nell'app mostriamo il codice di recupero: è l'unica
+    // occasione in cui l'utente lo vede, e senza salvarlo non c'è modo di
+    // recuperare i dati se il cookie di sessione scade o cambia dispositivo.
+    setStatus("welcome");
     return created;
+  }, []);
+
+  const enterApp = useCallback(() => setStatus("app"), []);
+
+  const recoverSession = useCallback(async (code) => {
+    const recovered = await api.recoverSession(code);
+    setSession(recovered);
+    setStatus("app");
+    return recovered;
   }, []);
 
   const setAttendance = useCallback(
@@ -97,6 +109,8 @@ export function SessionProvider({ children }) {
       loadingYears,
       refreshYear,
       completeOnboarding,
+      enterApp,
+      recoverSession,
       setAttendance,
       removeAttendance,
       entryForDate,
@@ -110,6 +124,8 @@ export function SessionProvider({ children }) {
       loadingYears,
       refreshYear,
       completeOnboarding,
+      enterApp,
+      recoverSession,
       setAttendance,
       removeAttendance,
       entryForDate,

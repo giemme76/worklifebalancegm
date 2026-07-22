@@ -1,6 +1,7 @@
 import PhoneFrame from "./components/PhoneFrame.jsx";
 import AppShell from "./components/app/AppShell.jsx";
 import OnboardingFlow from "./components/onboarding/OnboardingFlow.jsx";
+import SessionCreated from "./components/onboarding/SessionCreated.jsx";
 import { SessionProvider, useSession } from "./context/SessionContext.jsx";
 
 function Screen() {
@@ -21,7 +22,9 @@ function Screen() {
           {error}
         </div>
       )}
-      {status === "onboarding" ? <OnboardingFlow /> : <AppShell />}
+      {status === "onboarding" && <OnboardingFlow />}
+      {status === "welcome" && <SessionCreated />}
+      {status === "app" && <AppShell />}
     </>
   );
 }

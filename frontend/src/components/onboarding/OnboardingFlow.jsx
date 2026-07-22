@@ -6,7 +6,7 @@ import StepPolicy from "./StepPolicy.jsx";
 import StepSummary from "./StepSummary.jsx";
 
 export default function OnboardingFlow() {
-  const { completeOnboarding } = useSession();
+  const { completeOnboarding, recoverSession } = useSession();
 
   const [step, setStep] = useState(1);
   const [nickname, setNickname] = useState("");
@@ -20,6 +20,24 @@ export default function OnboardingFlow() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+
+  const [showRecovery, setShowRecovery] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const [recovering, setRecovering] = useState(false);
+  const [recoveryError, setRecoveryError] = useState(null);
+
+  const handleRecover = async () => {
+    const code = recoveryCode.trim();
+    if (!code) return;
+    setRecovering(true);
+    setRecoveryError(null);
+    try {
+      await recoverSession(code);
+    } catch {
+      setRecoveryError("Codice non trovato. Controlla di averlo copiato correttamente.");
+      setRecovering(false);
+    }
+  };
 
   const finishOnboarding = async () => {
     setSubmitting(true);
@@ -44,9 +62,55 @@ export default function OnboardingFlow() {
 
   return (
     <div className="flex flex-col h-full px-[22px] py-6 overflow-y-auto">
-      <div className="flex items-center mb-7">
+      <div className="flex items-center justify-between mb-7">
         <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
+        {step === 1 && !showRecovery && (
+          <button
+            type="button"
+            onClick={() => setShowRecovery(true)}
+            className="border-none bg-transparent text-xs font-bold text-office cursor-pointer px-1"
+          >
+            Ho già un codice
+          </button>
+        )}
       </div>
+
+      {step === 1 && showRecovery && (
+        <div className="flex flex-col gap-2 px-4 py-3.5 rounded-2xl bg-surface border-[1.5px] border-line mb-6">
+          <div className="text-[13px] font-bold">Recupera la tua sessione</div>
+          <div className="text-xs text-muted mb-1">Inserisci il codice ricevuto alla creazione (es. SW-XXXX-XXXX)</div>
+          <input
+            type="text"
+            placeholder="SW-XXXX-XXXX"
+            value={recoveryCode}
+            onChange={(e) => setRecoveryCode(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-line text-sm font-semibold
+                       text-ink bg-white outline-none focus:border-ink transition-colors font-mono"
+          />
+          {recoveryError && <div className="text-xs font-semibold text-pace-red">{recoveryError}</div>}
+          <div className="flex gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setShowRecovery(false);
+                setRecoveryError(null);
+              }}
+              disabled={recovering}
+              className="shrink-0 px-3.5 py-2.5 rounded-xl border-[1.5px] border-line bg-surface font-bold text-xs text-ink disabled:opacity-50"
+            >
+              Annulla
+            </button>
+            <button
+              type="button"
+              onClick={handleRecover}
+              disabled={recovering || !recoveryCode.trim()}
+              className="flex-1 py-2.5 rounded-xl border-none font-bold text-xs text-white bg-ink disabled:opacity-60"
+            >
+              {recovering ? "Recupero…" : "Recupera"}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-1.5 mb-7">
         {[1, 2, 3].map((n) => (
