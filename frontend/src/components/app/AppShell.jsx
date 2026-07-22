@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
+import logo from "../../img/worklife-logo-header.png";
 import BottomSheet from "./BottomSheet.jsx";
 import CalendarView from "./CalendarView.jsx";
 import Dashboard from "./Dashboard.jsx";
@@ -19,19 +20,28 @@ export default function AppShell() {
   }, [refreshYear, year]);
 
   const company = session?.company;
+  const nickname = session?.nickname;
   const initials = (company?.name || "WL").slice(0, 2).toUpperCase();
+  const badgeLabel = nickname || initials;
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
-      <div className="shrink-0 px-5 pt-[18px] pb-3 flex items-center justify-between border-b border-line">
+      <div className="shrink-0 px-5 pt-[18px] pb-3 border-b border-line">
+        <div className="flex items-center justify-between mb-2.5">
+          <img src={logo} alt="WorkLifeBalanceGM" className="h-5 w-auto" />
+          <div
+            className="max-w-[120px] h-[30px] px-3 rounded-[10px] bg-office-soft flex items-center
+                       justify-center text-xs font-extrabold text-office truncate"
+            title={nickname || undefined}
+          >
+            {badgeLabel}
+          </div>
+        </div>
         <div>
           <div className="text-[11px] font-bold text-muted uppercase tracking-wide">
             {company?.name || "—"}
           </div>
           <div className="text-lg font-extrabold tracking-tight">{TAB_TITLES[tab]}</div>
-        </div>
-        <div className="w-[34px] h-[34px] rounded-[10px] bg-office-soft flex items-center justify-center text-xs font-extrabold text-office">
-          {initials}
         </div>
       </div>
 
