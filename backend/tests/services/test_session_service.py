@@ -1,6 +1,7 @@
-from app.models.company import PolicyType
+from app.models.company import Company, PolicyType
+from app.models.session import UserSession
 from app.schemas.session import SessionCreateRequest
-from app.services.session_service import create_session, get_session_by_code
+from app.services.session_service import create_session, delete_session, get_session_by_code
 from app.utils.code_generator import generate_session_code, is_valid_code_format
 
 
@@ -89,3 +90,31 @@ def test_create_session_with_fixed_days_policy(db_session):
     assert session.company.policy_type == PolicyType.FIXED_DAYS
     assert session.company.office_days_per_week == 3
     assert session.company.smart_working_percentage is None
+
+
+def test_delete_session_removes_session_and_orphaned_company(db_session):
+    data = SessionCreateRequest(name="Acme S.r.l.", smart_working_percentage=40, work_days_per_week=5)
+    session = create_session(db_session, data)
+    company_id = session.company_id
+
+    delete_session(db_session, session)
+
+    assert db_session.get(UserSession, session.id) is None
+    assert db_session.get(Company, company_id) is None
+
+
+def test_delete_session_keeps_company_if_other_sessions_remain(db_session):
+    data = SessionCreateRequest(name="Acme S.r.l.", smart_working_percentage=40, work_days_per_week=5)
+    session = create_session(db_session, data)
+    company_id = session.company_id
+
+    # Seconda sessione sulla stessa azienda (scenario futuro multi-persona).
+    other = UserSession(code="SW-TEST-0001", company_id=company_id)
+    db_session.add(other)
+    db_session.commit()
+
+    delete_session(db_session, session)
+
+    assert db_session.get(UserSession, session.id) is None
+    assert db_session.get(Company, company_id) is not None
+    assert db_session.get(UserSession, other.id) is not None

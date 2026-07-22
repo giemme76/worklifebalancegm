@@ -94,13 +94,14 @@ export default function StepCompany({
         Come ti chiami?
       </div>
       <div className="text-sm text-muted leading-relaxed mb-3.5">
-        Useremo il tuo nome per personalizzare l'app (facoltativo).
+        Useremo il tuo nome per personalizzare l'app (facoltativo, max 10 caratteri).
       </div>
 
       <input
         type="text"
         placeholder="Es. Guido"
         value={nickname}
+        maxLength={10}
         onChange={(e) => setNickname(e.target.value)}
         className="w-full px-4 py-3.5 rounded-2xl border-[1.5px] border-line text-base font-semibold
                    text-ink bg-surface outline-none mb-6 focus:border-ink transition-colors"

@@ -24,3 +24,7 @@ class CompanyRepository:
 
     def get(self, company_id: int) -> Company | None:
         return self.db.get(Company, company_id)
+
+    def delete(self, company: Company) -> None:
+        self.db.delete(company)
+        self.db.flush()

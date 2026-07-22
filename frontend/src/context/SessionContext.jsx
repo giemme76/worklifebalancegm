@@ -71,6 +71,16 @@ export function SessionProvider({ children }) {
     return recovered;
   }, []);
 
+  const deleteSession = useCallback(async () => {
+    await api.deleteSession();
+    // Azione irreversibile: puliamo tutto lo stato locale e torniamo
+    // all'onboarding, come se non ci fosse mai stata una sessione.
+    setSession(null);
+    setDashboardByYear({});
+    setCalendarByYear({});
+    setStatus("onboarding");
+  }, []);
+
   const setAttendance = useCallback(
     async (dateStr, type) => {
       const year = Number(dateStr.slice(0, 4));
@@ -111,6 +121,7 @@ export function SessionProvider({ children }) {
       completeOnboarding,
       enterApp,
       recoverSession,
+      deleteSession,
       setAttendance,
       removeAttendance,
       entryForDate,
@@ -126,6 +137,7 @@ export function SessionProvider({ children }) {
       completeOnboarding,
       enterApp,
       recoverSession,
+      deleteSession,
       setAttendance,
       removeAttendance,
       entryForDate,

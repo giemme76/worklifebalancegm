@@ -47,3 +47,22 @@ def get_session_by_code(db: Session, code: str) -> UserSession | None:
     session_repo.touch(session)
     db.commit()
     return session
+
+
+def delete_session(db: Session, session: UserSession) -> None:
+    """Elimina definitivamente la sessione e le presenze collegate (cascade sul
+    modello). Se l'azienda non ha altre sessioni collegate, elimina anche quella:
+    oggi ogni onboarding crea una azienda dedicata, quindi non lasciamo record
+    orfani nel DB."""
+    session_repo = SessionRepository(db)
+    company_repo = CompanyRepository(db)
+    company_id = session.company_id
+
+    session_repo.delete(session)
+
+    if session_repo.count_for_company(company_id) == 0:
+        company = company_repo.get(company_id)
+        if company is not None:
+            company_repo.delete(company)
+
+    db.commit()

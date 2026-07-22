@@ -4,12 +4,16 @@ import logo from "../../img/worklife-logo-header.png";
 import BottomSheet from "./BottomSheet.jsx";
 import CalendarView from "./CalendarView.jsx";
 import Dashboard from "./Dashboard.jsx";
+import SessionInfoSheet from "./SessionInfoSheet.jsx";
 import Simulation from "./Simulation.jsx";
+
+const NICKNAME_BADGE_MAX_LENGTH = 10;
 
 export default function AppShell() {
   const { session, refreshYear } = useSession();
   const [tab, setTab] = useState("dashboard");
   const [sheetDate, setSheetDate] = useState(null);
+  const [showSessionInfo, setShowSessionInfo] = useState(false);
 
   const year = new Date().getFullYear();
 
@@ -20,19 +24,21 @@ export default function AppShell() {
   const company = session?.company;
   const nickname = session?.nickname;
   const initials = (company?.name || "WL").slice(0, 2).toUpperCase();
-  const badgeLabel = nickname || initials;
+  const badgeLabel = (nickname || initials).slice(0, NICKNAME_BADGE_MAX_LENGTH);
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="shrink-0 px-5 pt-[18px] pb-3 flex items-center justify-between border-b border-line">
         <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
-        <div
+        <button
+          type="button"
+          onClick={() => setShowSessionInfo(true)}
           className="max-w-[110px] h-[34px] px-3 rounded-[10px] bg-office-soft flex items-center
-                     justify-center text-xs font-extrabold text-office truncate"
+                     justify-center text-xs font-extrabold text-office truncate border-none cursor-pointer"
           title={nickname || undefined}
         >
           {badgeLabel}
-        </div>
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pt-[18px] pb-6">
@@ -72,6 +78,7 @@ export default function AppShell() {
       </div>
 
       {sheetDate && <BottomSheet dateStr={sheetDate} onClose={() => setSheetDate(null)} />}
+      {showSessionInfo && <SessionInfoSheet onClose={() => setShowSessionInfo(false)} />}
     </div>
   );
 }

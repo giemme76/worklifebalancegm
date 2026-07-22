@@ -35,6 +35,7 @@ export const api = {
   getCurrentSession: () => request("/session"),
   createSession: (data) => request("/session", { method: "POST", body: JSON.stringify(data) }),
   recoverSession: (code) => request(`/session/${encodeURIComponent(code)}`),
+  deleteSession: () => request("/session", { method: "DELETE" }),
 
   // Ricerca azienda (Google Places, onboarding)
   searchCompany: (q) => request(`/company/search?q=${encodeURIComponent(q)}`),

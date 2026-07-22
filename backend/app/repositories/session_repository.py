@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.session import UserSession
@@ -27,3 +27,11 @@ class SessionRepository:
         session.last_accessed_at = datetime.now(timezone.utc)
         self.db.flush()
         return session
+
+    def delete(self, session: UserSession) -> None:
+        self.db.delete(session)
+        self.db.flush()
+
+    def count_for_company(self, company_id: int) -> int:
+        stmt = select(func.count()).select_from(UserSession).where(UserSession.company_id == company_id)
+        return self.db.execute(stmt).scalar_one()

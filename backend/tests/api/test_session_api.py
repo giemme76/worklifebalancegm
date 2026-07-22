@@ -27,6 +27,19 @@ def test_create_session_trims_blank_nickname_to_none(client):
     assert body["nickname"] is None
 
 
+def test_create_session_rejects_nickname_longer_than_ten_chars(client):
+    response = client.post(
+        "/session",
+        json={
+            "name": "Acme",
+            "nickname": "NomeMoltoLungo",
+            "smart_working_percentage": 40,
+            "work_days_per_week": 5,
+        },
+    )
+    assert response.status_code == 422
+
+
 def test_recover_session_by_code(client):
     created = create_default_session(client)
 
@@ -90,4 +103,21 @@ def test_read_current_session_bootstrap_from_cookie(client):
 
 def test_read_current_session_without_cookie_is_unauthorized(client):
     response = client.get("/session")
+    assert response.status_code == 401
+
+
+def test_delete_current_session_removes_it_and_clears_cookie(client):
+    create_default_session(client)
+
+    response = client.delete("/session")
+    assert response.status_code == 204
+
+    # La sessione non è più valida: la cookie è stata rimossa dal server e in
+    # ogni caso il codice non risolve più a nulla.
+    assert client.cookies.get("officepresence_session") is None
+    assert client.get("/session").status_code == 401
+
+
+def test_delete_current_session_without_cookie_is_unauthorized(client):
+    response = client.delete("/session")
     assert response.status_code == 401

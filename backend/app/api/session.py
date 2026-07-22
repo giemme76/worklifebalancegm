@@ -6,7 +6,7 @@ from app.config import get_settings
 from app.database import get_db
 from app.models.session import UserSession
 from app.schemas.session import SessionCreateRequest, SessionOut
-from app.services.session_service import create_session, get_session_by_code
+from app.services.session_service import create_session, delete_session, get_session_by_code
 
 router = APIRouter(tags=["session"])
 settings = get_settings()
@@ -51,3 +51,15 @@ def recover_session(code: str, response: Response, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Codice non trovato")
     _set_session_cookie(response, session.code)
     return session
+
+
+@router.delete("/session", status_code=status.HTTP_204_NO_CONTENT)
+def delete_current_session(
+    response: Response,
+    session: UserSession = Depends(get_current_session),
+    db: Session = Depends(get_db),
+) -> None:
+    """Elimina definitivamente la sessione corrente, le presenze registrate e,
+    se non condivisa con altre sessioni, l'azienda. Azione irreversibile."""
+    delete_session(db, session)
+    response.delete_cookie(key=settings.session_cookie_name, path="/")
