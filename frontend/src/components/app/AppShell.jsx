@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
+import logo from "../../img/worklife-logo-header.png";
 import BottomSheet from "./BottomSheet.jsx";
 import CalendarView from "./CalendarView.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Simulation from "./Simulation.jsx";
-
-const TAB_TITLES = { dashboard: "Dashboard", calendar: "Calendario", simulation: "Simulazione" };
 
 export default function AppShell() {
   const { session, refreshYear } = useSession();
@@ -26,12 +25,7 @@ export default function AppShell() {
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="shrink-0 px-5 pt-[18px] pb-3 flex items-center justify-between border-b border-line">
-        <div>
-          <div className="text-[11px] font-bold text-muted uppercase tracking-wide">
-            {company?.name || "—"}
-          </div>
-          <div className="text-lg font-extrabold tracking-tight">{TAB_TITLES[tab]}</div>
-        </div>
+        <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
         <div
           className="max-w-[110px] h-[34px] px-3 rounded-[10px] bg-office-soft flex items-center
                      justify-center text-xs font-extrabold text-office truncate"
