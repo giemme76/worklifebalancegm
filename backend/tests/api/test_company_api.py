@@ -26,7 +26,7 @@ def test_search_company_returns_results_from_google(client, monkeypatch):
     assert body["results"][0]["city"] == "Milano"
 
 
-def test_search_company_returns_empty_results_when_google_fails(client, monkeypatch):
+def test_search_company_returns_empty_results_and_error_message_when_google_fails(client, monkeypatch):
     def fake_search(query):
         raise company_api.GooglePlacesError("boom")
 
@@ -34,7 +34,9 @@ def test_search_company_returns_empty_results_when_google_fails(client, monkeypa
 
     response = client.get("/company/search", params={"q": "Acme"})
     assert response.status_code == 200
-    assert response.json() == {"results": []}
+    body = response.json()
+    assert body["results"] == []
+    assert body["error"] == "boom"
 
 
 def test_search_company_requires_min_length_query(client):

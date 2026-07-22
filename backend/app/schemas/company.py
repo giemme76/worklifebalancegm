@@ -25,6 +25,10 @@ class CompanySearchResult(BaseModel):
 
 class CompanySearchResponse(BaseModel):
     results: list[CompanySearchResult]
+    # Presente solo se la chiamata a Google Places è fallita: aiuta a
+    # diagnosticare (chiave/API non abilitata, quota, ecc.) senza dover
+    # scavare nei log del server. Non contiene mai la chiave API.
+    error: str | None = None
 
 
 class CompanyOut(BaseModel):

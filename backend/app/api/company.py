@@ -13,8 +13,11 @@ def search_company(q: str = Query(min_length=2, description="Nome azienda da cer
     valore inventato lato client)."""
     try:
         raw_results = search_companies(q)
-    except GooglePlacesError:
+    except GooglePlacesError as exc:
         # Onboarding resta utilizzabile anche se Google Places non risponde:
-        # l'utente può comunque proseguire inserendo i dati a mano.
-        raw_results = []
+        # l'utente può comunque proseguire inserendo i dati a mano. Il
+        # messaggio d'errore (status Google + error_message, mai la chiave)
+        # torna comunque al client per diagnosticare senza dover leggere i
+        # log del server.
+        return CompanySearchResponse(results=[], error=str(exc))
     return CompanySearchResponse(results=[CompanySearchResult(**result) for result in raw_results])
