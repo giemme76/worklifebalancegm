@@ -11,9 +11,13 @@ restituiscono una lista vuota (nessuna eccezione): l'onboarding resta
 utilizzabile anche senza integrazione configurata.
 """
 
+import logging
+
 import httpx
 
 from app.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 _PLACES_SEARCH_URL = "https://places.googleapis.com/v1/places:searchText"
 
@@ -91,7 +95,20 @@ def search_companies(query: str, *, region_code: str = "IT", max_results: int = 
             timeout=_REQUEST_TIMEOUT_SECONDS,
         )
         response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        # Logghiamo status + corpo della risposta di Google: è l'unico modo per
+        # distinguere "chiave non valida", "API non abilitata sul progetto",
+        # "billing disattivato" o "quota superata", che altrimenti l'endpoint
+        # nasconde restituendo semplicemente una lista vuota.
+        logger.warning(
+            "Google Places ha risposto %s per query %r: %s",
+            exc.response.status_code,
+            query,
+            exc.response.text[:1000],
+        )
+        raise GooglePlacesError(f"Errore chiamata Google Places: {exc}") from exc
     except httpx.HTTPError as exc:
+        logger.warning("Errore di rete verso Google Places per query %r: %s", query, exc)
         raise GooglePlacesError(f"Errore chiamata Google Places: {exc}") from exc
 
     data = response.json()
