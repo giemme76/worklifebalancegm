@@ -47,31 +47,37 @@ tests/              test pytest, stessa struttura di app/
 
 ## Deploy su hosting cPanel
 
-Setup in uso: repo clonato **fuori** da `public_html` (es.
-`~/worklifebalancegm-app`), backend pubblicato con **Setup Python App**
-(Passenger) su un path dedicato (es. `tuodominio.tld/api`), frontend buildato
-e pubblicato come file statici sotto `public_html/` da `../deploy.sh` (vedi
-README alla radice del repo).
+Setup in uso: repo clonato **fuori** da `public_html`, backend pubblicato con
+**Setup Python App** (Passenger) su `smartworkingmanager.com/api` — stesso
+dominio del frontend (vedi `../deploy.sh`), così il cookie di sessione resta
+same-site invece di cross-site tra due domini diversi. Frontend buildato e
+pubblicato come file statici alla radice del dominio da `../deploy.sh`.
 
 Setup iniziale:
 
 1. Clonare il repo sul server, fuori da `public_html`.
 2. Su cPanel, sezione **Setup Python App**: creare una nuova app con
    - Application root: la cartella `backend/` del repo clonato
-   - Application URL: path dedicato, es. `tuodominio.tld/api` (Passenger
-     instrada le richieste su quel path all'app, che risponde comunque sulle
-     sue rotte "a radice", es. `/session`, `/dashboard` — non serve
-     modificare il codice)
+   - Application URL: `smartworkingmanager.com/api` (Passenger instrada le
+     richieste su quel path all'app, che risponde comunque sulle sue rotte "a
+     radice", es. `/session`, `/dashboard` — non serve modificare il codice)
    - Application startup file: `passenger_wsgi.py`
    - Application Entry point: `application`
 3. Nel virtualenv creato da cPanel (il pannello mostra il comando `source
    .../bin/activate`): `pip install -r requirements.txt`.
 4. Variabili d'ambiente (tab **Environment variables** della Python App):
    - `DATABASE_URL=mysql+pymysql://utente:password@localhost/nome_db`
-   - `APP_ENV=production` (attiva il cookie di sessione `Secure`)
-   - `CORS_ORIGINS=https://tuodominio.tld`
+   - `APP_ENV=production` (attiva il cookie di sessione `Secure` — richiede
+     SSL attivo sul dominio, altrimenti il browser scarta il cookie)
+   - `CORS_ORIGINS=https://smartworkingmanager.com`
    - `GOOGLE_MAPS_API_KEY=...` (per la ricerca aziende in onboarding)
 5. **Restart** dell'app Python da cPanel.
+
+**Nota migrazione dominio:** il backend girava in precedenza su
+`giemme76.com/worklifebalancegm/api`, con `CORS_ORIGINS` puntato lì. Se quel
+deploy resta online in parallelo (path legacy, non più aggiornato), le due
+app Python restano indipendenti: stesso codice, `Setup Python App` e
+variabili d'ambiente separate per ciascuna.
 
 Ad ogni aggiornamento: push su GitHub dal locale → `git pull` sul terminale
 cPanel, dalla cartella del repo → se sono cambiate le dipendenze Python,

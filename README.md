@@ -4,7 +4,8 @@ App web login-free per monitorare il rispetto della policy di presenza in
 ufficio / smart working: onboarding in 3 step, dashboard con obiettivo annuale
 e semaforo di andamento, calendario, simulazione di scenari futuri.
 
-Live: https://giemme76.com/worklifebalancegm/
+Live: https://smartworkingmanager.com/ (in precedenza su
+https://giemme76.com/worklifebalancegm/, ancora online ma non più aggiornato)
 
 Vedi [docs/OfficePresence.md](docs/OfficePresence.md) per il concept iniziale
 (alcuni dettagli sono superati dall'implementazione reale, allineata al design
@@ -43,7 +44,12 @@ Vedi [frontend/README.md](frontend/README.md) per setup locale (`npm install && 
 
 Flusso in uso: push su GitHub dal proprio ambiente locale → `git pull` sul
 terminale cPanel nella cartella del repo (fuori da `public_html`) → `./deploy.sh`
-(builda il frontend e pubblica solo gli asset statici, senza toccare il
-routing `/api` di Passenger) → se sono cambiate le dipendenze Python,
-`pip install -r requirements.txt` nel virtualenv del backend → **Restart**
-dell'app Python da cPanel.
+(builda il frontend per smartworkingmanager.com, alla radice del dominio, e
+pubblica solo gli asset statici, senza toccare il routing `/api` di Passenger)
+→ se sono cambiate le dipendenze Python, `pip install -r requirements.txt` nel
+virtualenv del backend → **Restart** dell'app Python da cPanel.
+
+`deploy.sh` verifica `PUBLIC_TARGET` (document root del dominio): controllarla
+prima del primo deploy sul nuovo dominio. Per rifare invece un deploy sotto
+`giemme76.com/worklifebalancegm/` (il path dedicato usato in precedenza), vedi
+i commenti in testa a `deploy.sh`.
