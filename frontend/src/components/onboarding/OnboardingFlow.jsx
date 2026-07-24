@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
-import logo from "../../img/worklife-logo-header.png";
+import BrandWordmark from "../BrandWordmark.jsx";
 import StepCompany from "./StepCompany.jsx";
 import StepPolicy from "./StepPolicy.jsx";
 import StepSummary from "./StepSummary.jsx";
@@ -63,7 +63,7 @@ export default function OnboardingFlow() {
   return (
     <div className="flex flex-col h-full px-[22px] py-6 overflow-y-auto">
       <div className="flex items-center justify-between mb-7">
-        <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
+        <BrandWordmark className="text-2xl" />
         {step === 1 && !showRecovery && (
           <button
             type="button"

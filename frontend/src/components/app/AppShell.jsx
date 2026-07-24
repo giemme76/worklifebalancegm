@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
-import logo from "../../img/worklife-logo-header.png";
+import BrandWordmark from "../BrandWordmark.jsx";
 import BottomSheet from "./BottomSheet.jsx";
 import CalendarView from "./CalendarView.jsx";
 import Dashboard from "./Dashboard.jsx";
@@ -29,7 +29,7 @@ export default function AppShell() {
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="shrink-0 px-5 pt-[18px] pb-3 flex items-center justify-between border-b border-line">
-        <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
+        <BrandWordmark className="text-base" />
         <button
           type="button"
           onClick={() => setShowSessionInfo(true)}

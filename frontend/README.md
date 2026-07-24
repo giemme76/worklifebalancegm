@@ -1,6 +1,6 @@
-# WorkLifeBalanceGM — Frontend
+# Smart Working Manager — Frontend
 
-App React (Vite + Tailwind) fedele al design "WorkLifeBalanceGM": onboarding in 3 step
+App React (Vite + Tailwind) fedele al design "Smart Working Manager": onboarding in 3 step
 (nome/nickname, azienda con ricerca Google Places, policy, riepilogo con
 codice di recupero), poi Dashboard / Calendario / Simulazione, collegata alle
 API del backend.
@@ -49,16 +49,19 @@ src/
                            post-creazione col codice di recupero
   components/app/         shell con tab bar, Dashboard, Calendario, Simulazione, bottom
                            sheet, pannello sessione (codice + eliminazione dati)
+  components/BrandWordmark.jsx  scritta colorata "Smart Working Manager" usata negli
+                           header al posto di un logo grafico
   components/Footer.jsx   credito "Realizzato da Giemme76", visibile in ogni schermata
-  img/                    logo WorkLifeBalanceGM
+  img/                    logo originale (non più usato in-app, tenuto come riferimento
+                           colori e per generare public/og-image.png)
 ```
 
 ## Palette e stati
 
-Colori e tipografia (Manrope) riprendono il design originale, con il verde
-principale allineato al logo (`src/img/`); le 6 tipologie di presenza
-(Ufficio, Smart working, Ferie, Permesso, Malattia, Trasferta) e il semaforo
-di andamento (verde/arancio/rosso) sono definiti una sola volta in
+Colori e tipografia (Manrope) riprendono il design originale, col verde
+principale ripreso dal logo originale (`src/img/`); le 6 tipologie di
+presenza (Ufficio, Smart working, Ferie, Permesso, Malattia, Trasferta) e il
+semaforo di andamento (verde/arancio/rosso) sono definiti una sola volta in
 `tailwind.config.js` e `src/lib/statusDefs.js`.
 
 ## Sessione: recupero ed eliminazione

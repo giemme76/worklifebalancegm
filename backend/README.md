@@ -1,4 +1,4 @@
-# WorkLifeBalanceGM — Backend
+# Smart Working Manager — Backend
 
 API FastAPI per il monitoraggio delle presenze ufficio/smart working.
 

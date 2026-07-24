@@ -1,4 +1,4 @@
-# WorkLifeBalanceGM
+# Smart Working Manager
 
 App web login-free per monitorare il rispetto della policy di presenza in
 ufficio / smart working: onboarding in 3 step, dashboard con obiettivo annuale

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSession } from "../../context/SessionContext.jsx";
-import logo from "../../img/worklife-logo-header.png";
+import BrandWordmark from "../BrandWordmark.jsx";
 
 export default function SessionCreated() {
   const { session, enterApp } = useSession();
@@ -23,7 +23,7 @@ export default function SessionCreated() {
   return (
     <div className="flex flex-col h-full px-[22px] py-6 overflow-y-auto">
       <div className="flex items-center mb-7">
-        <img src={logo} alt="WorkLifeBalanceGM" className="h-8 w-auto" />
+        <BrandWordmark className="text-2xl" />
       </div>
 
       <div className="flex items-center gap-2.5 mb-2">
