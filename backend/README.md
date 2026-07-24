@@ -1,5 +1,7 @@
 # Smart Working Manager — Backend
 
+*[English version](README.en.md)*
+
 API FastAPI per il monitoraggio delle presenze ufficio/smart working.
 
 ## Setup locale
@@ -44,6 +46,28 @@ app/
     utils/          funzioni di supporto (codice sessione, calcolo date)
 tests/              test pytest, stessa struttura di app/
 ```
+
+## Endpoint principali
+
+- `POST /session`, `GET /session`, `GET /session/{code}`, `DELETE /session` —
+  creazione, bootstrap da cookie, recupero da codice, eliminazione
+- `GET /company/search` — ricerca aziende (Google Places)
+- `GET /company`, `PATCH /company` — lettura e aggiornamento di policy,
+  giorni lavorativi e data di inizio monitoraggio (sezione impostazioni)
+- `GET /dashboard`, `GET /calendar`, `POST /attendance`,
+  `DELETE /attendance/{date}`, `POST /simulation`
+
+Il calcolo dell'obiettivo annuale (`app/services/calculation_service.py`)
+considera `Company.monitoring_start_date`: se impostata, i giorni
+richiesti/anno si contano da quella data in poi invece che dal 1° gennaio
+(utile per chi inizia a monitorare a metà anno); se la data è nel futuro
+rispetto all'anno richiesto, l'obiettivo è zero.
+
+Il recupero sessione (`GET /session/{code}`) normalizza il codice inserito
+(`app/utils/code_generator.normalize_code`) prima del confronto in DB:
+tollera maiuscole/minuscole, spazi e i trattini Unicode che autocorrect di
+editor/tabelle (Word, Notion, Google Sheets, "trattini intelligenti"
+iOS/macOS) sostituiscono spesso al normale `-` in fase di copia/incolla.
 
 ## Deploy su hosting cPanel
 

@@ -1,9 +1,11 @@
 # Smart Working Manager — Frontend
 
+*[English version](README.en.md)*
+
 App React (Vite + Tailwind) fedele al design "Smart Working Manager": onboarding in 3 step
-(nome/nickname, azienda con ricerca Google Places, policy, riepilogo con
-codice di recupero), poi Dashboard / Calendario / Simulazione, collegata alle
-API del backend.
+(nome/nickname, azienda con ricerca Google Places, policy e data di inizio
+monitoraggio, riepilogo con codice di recupero), poi Dashboard / Calendario /
+Simulazione, collegata alle API del backend.
 
 ## Setup locale
 
@@ -45,15 +47,19 @@ src/
   api/client.js          wrapper fetch verso il backend (cookie di sessione incluso)
   context/                stato sessione + cache dashboard/calendario per anno
   lib/                    utility pure: date, stati presenza, palette, anteprima onboarding
-  components/onboarding/  wizard 3 step (nome/azienda, policy, riepilogo) + schermata
-                           post-creazione col codice di recupero
+  components/onboarding/  wizard 3 step (nome/azienda, policy + data di inizio
+                           monitoraggio, riepilogo) + schermata post-creazione col
+                           codice di recupero
   components/app/         shell con tab bar, Dashboard, Calendario, Simulazione, bottom
-                           sheet, pannello sessione (codice + eliminazione dati)
+                           sheet, pannello sessione (codice + eliminazione dati),
+                           pannello impostazioni (policy + data di inizio monitoraggio)
   components/BrandWordmark.jsx  scritta colorata "Smart Working Manager" usata negli
                            header al posto di un logo grafico
-  components/Footer.jsx   credito "Realizzato da Giemme76", visibile in ogni schermata
-  img/                    logo originale (non più usato in-app, tenuto come riferimento
-                           colori e per generare public/og-image.png)
+  components/Footer.jsx   credito "Realizzato da Giemme76" + link all'ultimo commit
+                           GitHub (hash iniettato in build da vite.config.js),
+                           visibile in ogni schermata
+  img/                    logo (usato come base per public/og-image.png, generato in
+                           fase di sviluppo — vedi commenti in vite.config.js)
 ```
 
 ## Palette e stati
@@ -68,7 +74,11 @@ semaforo di andamento (verde/arancio/rosso) sono definiti una sola volta in
 
 Ogni sessione ha un codice univoco (`SW-XXXX-XXXX`) mostrato una sola volta
 subito dopo l'onboarding: è l'unico modo per recuperare i dati se il cookie
-scade o si cambia dispositivo/browser ("Ho già un codice" nello step 1).
+scade o si cambia dispositivo/browser ("Ho già un codice" nello step 1). Il
+recupero funziona anche se il codice viene incollato da una tabella con
+trattini "intelligenti" diversi dall'ASCII: il backend normalizza il
+confronto (vedi `../backend/README.md`).
 Cliccando sul badge col nickname nell'header dell'app si riapre lo stesso
 codice, con un pulsante per eliminare definitivamente la sessione e tutti i
-dati collegati.
+dati collegati. L'icona a ingranaggio accanto permette di modificare policy e
+data di inizio monitoraggio in qualsiasi momento.
