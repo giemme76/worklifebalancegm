@@ -49,7 +49,11 @@ pubblica solo gli asset statici, senza toccare il routing `/api` di Passenger)
 → se sono cambiate le dipendenze Python, `pip install -r requirements.txt` nel
 virtualenv del backend → **Restart** dell'app Python da cPanel.
 
-`deploy.sh` verifica `PUBLIC_TARGET` (document root del dominio): controllarla
-prima del primo deploy sul nuovo dominio. Per rifare invece un deploy sotto
-`giemme76.com/worklifebalancegm/` (il path dedicato usato in precedenza), vedi
-i commenti in testa a `deploy.sh`.
+Su questo hosting la Document Root di `smartworkingmanager.com` coincide con
+`public_html/worklifebalancegm` (stessa cartella usata in precedenza per
+`giemme76.com/worklifebalancegm/`): `deploy.sh` lo assume come default di
+`PUBLIC_TARGET`. Le due basi non sono compatibili nella stessa cartella, quindi
+pubblicando qui la build nuova `giemme76.com/worklifebalancegm/` smette di
+funzionare correttamente — scelta accettata a favore del nuovo dominio. Se la
+Document Root cambia, sovrascrivere `PUBLIC_TARGET` (vedi commenti in testa a
+`deploy.sh`).

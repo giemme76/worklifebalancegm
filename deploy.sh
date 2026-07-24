@@ -4,6 +4,14 @@
 # Default: smartworkingmanager.com alla radice del dominio (frontend E
 # backend sullo stesso dominio, cookie di sessione same-site).
 #
+# Nota impianto attuale: su questo account la Document Root di
+# smartworkingmanager.com È la cartella public_html/worklifebalancegm (stessa
+# cartella usata in precedenza per giemme76.com/worklifebalancegm/). Le due
+# basi (root "/" vs "/worklifebalancegm/") sono incompatibili nella stessa
+# cartella: pubblicando qui la build nuova, giemme76.com/worklifebalancegm/
+# smette di funzionare correttamente (asset 404) — scelta accettata, dato che
+# smartworkingmanager.com lo sostituisce.
+#
 # Presuppone:
 # - il repo clonato FUORI dalla document root pubblica, es. ~/apps/smartworkingmanager
 # - il backend pubblicato via "Setup Python App" (Application URL: /api)
@@ -13,21 +21,14 @@
 #
 #   ./deploy.sh
 #
-# Verifica PUBLIC_TARGET prima del primo deploy: deve essere la document root
-# esatta assegnata da cPanel al dominio (cPanel > Domains > Document Root).
+# Se cambia la Document Root del dominio, sovrascrivere PUBLIC_TARGET:
 #
-# Per rifare invece il vecchio deploy sotto giemme76.com/worklifebalancegm/
-# (path dedicato, non radice), sovrascrivere le tre variabili:
-#
-#   PUBLIC_TARGET="$HOME/public_html/worklifebalancegm" \
-#   API_BASE_URL="https://giemme76.com/worklifebalancegm/api" \
-#   VITE_BASE_PATH="/worklifebalancegm/" \
-#   ./deploy.sh
+#   PUBLIC_TARGET="/percorso/esatto" ./deploy.sh
 
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PUBLIC_TARGET="${PUBLIC_TARGET:-$HOME/public_html}"   # cartella pubblica del frontend
+PUBLIC_TARGET="${PUBLIC_TARGET:-$HOME/public_html/worklifebalancegm}"   # document root reale di smartworkingmanager.com
 API_BASE_URL="${API_BASE_URL:-https://smartworkingmanager.com/api}"
 # vite.config.js legge VITE_BASE_PATH da process.env (variabile di shell),
 # non da .env.production (quello alimenta solo import.meta.env lato client):
