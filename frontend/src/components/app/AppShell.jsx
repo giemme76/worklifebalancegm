@@ -3,6 +3,7 @@ import { useSession } from "../../context/SessionContext.jsx";
 import BrandWordmark from "../BrandWordmark.jsx";
 import BottomSheet from "./BottomSheet.jsx";
 import CalendarView from "./CalendarView.jsx";
+import CompanySettingsSheet from "./CompanySettingsSheet.jsx";
 import Dashboard from "./Dashboard.jsx";
 import SessionInfoSheet from "./SessionInfoSheet.jsx";
 import Simulation from "./Simulation.jsx";
@@ -14,6 +15,7 @@ export default function AppShell() {
   const [tab, setTab] = useState("dashboard");
   const [sheetDate, setSheetDate] = useState(null);
   const [showSessionInfo, setShowSessionInfo] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const year = new Date().getFullYear();
 
@@ -30,15 +32,39 @@ export default function AppShell() {
     <div className="flex flex-col h-full overflow-hidden relative">
       <div className="shrink-0 px-5 pt-[18px] pb-3 flex items-center justify-between border-b border-line">
         <BrandWordmark className="text-base" />
-        <button
-          type="button"
-          onClick={() => setShowSessionInfo(true)}
-          className="max-w-[110px] h-[34px] px-3 rounded-[10px] bg-office-soft flex items-center
-                     justify-center text-xs font-extrabold text-office truncate border-none cursor-pointer"
-          title={nickname || undefined}
-        >
-          {badgeLabel}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowSettings(true)}
+            aria-label="Impostazioni"
+            title="Impostazioni"
+            className="w-[34px] h-[34px] rounded-[10px] bg-surface border-[1.5px] border-line
+                       flex items-center justify-center text-ink cursor-pointer"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowSessionInfo(true)}
+            className="max-w-[110px] h-[34px] px-3 rounded-[10px] bg-office-soft flex items-center
+                       justify-center text-xs font-extrabold text-office truncate border-none cursor-pointer"
+            title={nickname || undefined}
+          >
+            {badgeLabel}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 pt-[18px] pb-6">
@@ -79,6 +105,7 @@ export default function AppShell() {
 
       {sheetDate && <BottomSheet dateStr={sheetDate} onClose={() => setSheetDate(null)} />}
       {showSessionInfo && <SessionInfoSheet onClose={() => setShowSessionInfo(false)} />}
+      {showSettings && <CompanySettingsSheet onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

@@ -40,6 +40,10 @@ export const api = {
   // Ricerca azienda (Google Places, onboarding)
   searchCompany: (q) => request(`/company/search?q=${encodeURIComponent(q)}`),
 
+  // Impostazioni azienda (policy, data di inizio monitoraggio)
+  updateCompanySettings: (data) =>
+    request("/company", { method: "PATCH", body: JSON.stringify(data) }),
+
   // Dashboard
   getDashboard: (year) => request(`/dashboard?year=${year}`),
 

@@ -4,7 +4,6 @@ Le funzioni qui dentro sono pure (nessun accesso al DB), per essere facilmente
 testabili in isolamento.
 """
 
-import calendar as _calendar_module
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date
@@ -14,7 +13,7 @@ from app.models.company import Company, PolicyType
 from app.schemas.calendar import CalendarCounts
 from app.schemas.dashboard import DashboardOut, Pace
 from app.schemas.simulation import SimulationOut
-from app.utils.date_utils import count_working_days_in_year
+from app.utils.date_utils import count_working_days_in_range
 
 # Ferie, permessi, malattia e trasferta non contano né come presenza in ufficio
 # né come smart working ai fini del calcolo dell'obiettivo.
@@ -33,14 +32,44 @@ class AnnualTarget:
     required_smart_days: int
 
 
+def _monitoring_window(company: Company, year: int) -> tuple[date, date] | None:
+    """Intervallo [inizio, fine] entro cui contare i giorni lavorativi nell'anno dato.
+
+    Se `monitoring_start_date` non è impostata, o ricade in un anno precedente
+    (il monitoraggio è già iniziato prima), l'intervallo è l'intero anno
+    (comportamento storico). Se ricade in un anno futuro rispetto a `year`,
+    il monitoraggio non è ancora iniziato in quell'anno: restituisce None.
+    """
+    start = company.monitoring_start_date
+    year_start = date(year, 1, 1)
+    year_end = date(year, 12, 31)
+
+    if start is None or start.year < year:
+        return year_start, year_end
+    if start.year > year:
+        return None
+    return start, year_end
+
+
 def calculate_annual_target(company: Company, year: int) -> AnnualTarget:
     """Calcola i giorni lavorativi totali e la ripartizione richiesta ufficio/smart.
 
     Supporta entrambi i tipi di policy:
     - PERCENT: es. 40% smart working -> 60% presenza in ufficio
     - FIXED_DAYS: es. 3 giorni in ufficio a settimana
+
+    Se il monitoraggio non è ancora iniziato in `year` (vedi
+    `monitoring_start_date`), l'obiettivo è zero.
     """
-    total_working_days = count_working_days_in_year(year, company.work_days_per_week)
+    window = _monitoring_window(company, year)
+    if window is None:
+        return AnnualTarget(total_working_days=0, required_office_days=0, required_smart_days=0)
+
+    start, end = window
+    total_working_days = count_working_days_in_range(start, end, company.work_days_per_week)
+
+    if total_working_days == 0:
+        return AnnualTarget(total_working_days=0, required_office_days=0, required_smart_days=0)
 
     if company.policy_type == PolicyType.FIXED_DAYS:
         if company.office_days_per_week is None:
@@ -80,21 +109,22 @@ def build_calendar_counts(attendance_types: Iterable[AttendanceType]) -> Calenda
     return counts
 
 
-def _days_in_year(year: int) -> int:
-    return 366 if _calendar_module.isleap(year) else 365
-
-
 def _compute_pace(
-    *, required_office_days: int, completed_office_days: int, year: int, as_of: date
+    *, required_office_days: int, completed_office_days: int, start: date, end: date, as_of: date
 ) -> tuple[Pace, str]:
     """Semaforo di andamento, equivalente alla logica `getStats()` del design:
 
-    confronta i giorni fatti con quelli attesi in base alla frazione di anno
-    trascorsa, così da segnalare presto se si rischia di rimanere indietro.
+    confronta i giorni fatti con quelli attesi in base alla frazione già
+    trascorsa della finestra di monitoraggio ([start, end], non
+    necessariamente l'anno intero se è impostata una data di inizio), così da
+    segnalare presto se si rischia di rimanere indietro.
     """
-    jan1 = date(year, 1, 1)
-    elapsed_days = (as_of - jan1).days + 1
-    elapsed_fraction = min(1.0, max(0.0, elapsed_days / _days_in_year(year)))
+    if as_of < start:
+        elapsed_fraction = 0.0
+    else:
+        total_days = (end - start).days + 1
+        elapsed_days = (as_of - start).days + 1
+        elapsed_fraction = min(1.0, max(0.0, elapsed_days / total_days))
 
     expected = required_office_days * elapsed_fraction
     ratio = (completed_office_days / expected) if expected > 0.5 else 1.0
@@ -133,12 +163,20 @@ def build_dashboard(
         current_office_percentage = 0.0
         current_smart_percentage = 0.0
 
-    pace, pace_label = _compute_pace(
-        required_office_days=target.required_office_days,
-        completed_office_days=completed_office_days,
-        year=year,
-        as_of=reference_date,
-    )
+    window = _monitoring_window(company, year)
+    if window is None:
+        # Il monitoraggio non è ancora iniziato in questo anno (data di inizio
+        # nel futuro): nessun obiettivo attivo, niente da segnalare.
+        pace, pace_label = "green", "Monitoraggio non ancora iniziato"
+    else:
+        start, end = window
+        pace, pace_label = _compute_pace(
+            required_office_days=target.required_office_days,
+            completed_office_days=completed_office_days,
+            start=start,
+            end=end,
+            as_of=reference_date,
+        )
 
     return DashboardOut(
         year=year,

@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.models.company import Company, PolicyType
 from app.models.session import UserSession
 from app.schemas.session import SessionCreateRequest
@@ -76,6 +78,23 @@ def test_get_session_by_code_recupera_sessione_esistente(db_session):
 
 def test_get_session_by_code_ritorna_none_per_codice_non_esistente(db_session):
     assert get_session_by_code(db_session, "SW-0000-0000") is None
+
+
+def test_create_session_defaults_monitoring_start_date_to_today(db_session):
+    data = SessionCreateRequest(name="Acme S.r.l.", smart_working_percentage=40, work_days_per_week=5)
+    session = create_session(db_session, data)
+    assert session.company.monitoring_start_date == date.today()
+
+
+def test_create_session_stores_chosen_monitoring_start_date(db_session):
+    data = SessionCreateRequest(
+        name="Acme S.r.l.",
+        smart_working_percentage=40,
+        work_days_per_week=5,
+        monitoring_start_date=date(2026, 3, 15),
+    )
+    session = create_session(db_session, data)
+    assert session.company.monitoring_start_date == date(2026, 3, 15)
 
 
 def test_create_session_with_fixed_days_policy(db_session):

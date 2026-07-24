@@ -6,6 +6,7 @@ export default function StepSummary({
   policyType,
   policyPercent,
   policyDays,
+  monitoringStartDate,
   onBack,
   onFinish,
   submitting,
@@ -20,9 +21,18 @@ export default function StepSummary({
       smartWorkingPercentage: 100 - policyPercent,
       officeDaysPerWeek: policyDays,
       workDaysPerWeek: 5,
+      monitoringStartDate,
     },
     year
   );
+
+  const monitoringStartLabel = monitoringStartDate
+    ? new Date(`${monitoringStartDate}T00:00:00`).toLocaleDateString("it-IT", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "—";
 
   const policySummaryText =
     policyType === "PERCENT" ? `${policyPercent}% in ufficio` : `${policyDays} giorni/settimana`;
@@ -52,6 +62,7 @@ export default function StepSummary({
         <SummaryRow label="Azienda" value={companyName || "—"} />
         <SummaryRow label="Sede" value={city || "—"} />
         <SummaryRow label="Policy" value={policySummaryText} />
+        <SummaryRow label="Inizio monitoraggio" value={monitoringStartLabel} />
       </div>
 
       <div className="flex-1" />

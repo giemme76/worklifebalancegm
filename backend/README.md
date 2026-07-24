@@ -90,11 +90,14 @@ tramite `a2wsgi`, non lo stub).
 
 **Attenzione:** `init_db()` crea solo le tabelle **mancanti** all'avvio, non
 altera quelle già esistenti. Ogni volta che si aggiunge una colonna a un
-modello (es. `UserSession.nickname`), su un DB di produzione già popolato va
-applicata a mano, altrimenti l'endpoint che la usa risponde 500:
+modello (es. `UserSession.nickname`, `Company.monitoring_start_date`), su un
+DB di produzione già popolato va applicata a mano, altrimenti l'endpoint che
+la usa risponde 500:
 
 ```sql
 ALTER TABLE nome_tabella ADD COLUMN nome_colonna TIPO NULL;
+-- Per la data di inizio monitoraggio (impostazioni azienda):
+ALTER TABLE companies ADD COLUMN monitoring_start_date DATE NULL;
 ```
 
 In alternativa, valutare migrazioni esplicite (es. Alembic) prima di

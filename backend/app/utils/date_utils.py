@@ -16,10 +16,21 @@ def working_weekdays(work_days_per_week: int) -> set[int]:
 
 def count_working_days_in_year(year: int, work_days_per_week: int) -> int:
     """Conta i giorni lavorativi nell'anno dato, in base ai giorni lavorativi/settimana."""
+    return count_working_days_in_range(date(year, 1, 1), date(year, 12, 31), work_days_per_week)
+
+
+def count_working_days_in_range(start: date, end: date, work_days_per_week: int) -> int:
+    """Conta i giorni lavorativi nell'intervallo [start, end] (estremi inclusi).
+
+    Usato per calcolare l'obiettivo quando il monitoraggio non parte dal 1°
+    gennaio (es. iniziato a metà anno). Se start > end, l'intervallo è vuoto.
+    """
+    if start > end:
+        return 0
+
     valid_weekdays = working_weekdays(work_days_per_week)
 
-    current = date(year, 1, 1)
-    end = date(year, 12, 31)
+    current = start
     one_day = timedelta(days=1)
 
     count = 0

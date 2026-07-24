@@ -6,6 +6,8 @@ export default function StepPolicy({
   setPolicyPercent,
   policyDays,
   setPolicyDays,
+  monitoringStartDate,
+  setMonitoringStartDate,
   onBack,
   onNext,
 }) {
@@ -93,6 +95,23 @@ export default function StepPolicy({
           </div>
         </div>
       )}
+
+      <div className="bg-surface border-[1.5px] border-line rounded-2xl p-5 mb-4">
+        <div className="text-[13px] text-muted font-semibold mb-1.5">
+          Da quando iniziare a monitorare
+        </div>
+        <div className="text-xs text-muted mb-3">
+          I giorni richiesti si calcolano da questa data, non dal 1° gennaio (utile se inizi a
+          metà anno).
+        </div>
+        <input
+          type="date"
+          value={monitoringStartDate}
+          onChange={(e) => setMonitoringStartDate(e.target.value)}
+          className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-line text-sm font-semibold
+                     text-ink bg-white outline-none focus:border-ink transition-colors"
+        />
+      </div>
 
       <div className="flex-1" />
 

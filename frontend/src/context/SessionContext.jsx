@@ -71,6 +71,18 @@ export function SessionProvider({ children }) {
     return recovered;
   }, []);
 
+  const updateCompanySettings = useCallback(
+    async (data) => {
+      const company = await api.updateCompanySettings(data);
+      setSession((s) => (s ? { ...s, company } : s));
+      // La policy/data di inizio monitoraggio cambia il calcolo dell'obiettivo:
+      // ricarica i dati dell'anno corrente così dashboard/calendario sono coerenti.
+      await refreshYear(new Date().getFullYear());
+      return company;
+    },
+    [refreshYear]
+  );
+
   const deleteSession = useCallback(async () => {
     await api.deleteSession();
     // Azione irreversibile: puliamo tutto lo stato locale e torniamo
@@ -121,6 +133,7 @@ export function SessionProvider({ children }) {
       completeOnboarding,
       enterApp,
       recoverSession,
+      updateCompanySettings,
       deleteSession,
       setAttendance,
       removeAttendance,
@@ -137,6 +150,7 @@ export function SessionProvider({ children }) {
       completeOnboarding,
       enterApp,
       recoverSession,
+      updateCompanySettings,
       deleteSession,
       setAttendance,
       removeAttendance,

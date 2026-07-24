@@ -1,7 +1,7 @@
 import enum
-from datetime import datetime
+from datetime import date, datetime
 
-from sqlalchemy import DateTime, Enum, Float, Integer, String, func
+from sqlalchemy import Date, DateTime, Enum, Float, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -37,6 +37,12 @@ class Company(Base):
     # Giorni lavorativi settimanali della persona (tipicamente 5), usato per calcolare
     # il totale dei giorni lavorativi nell'anno indipendentemente dalla policy.
     work_days_per_week: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
+
+    # Data da cui l'utente vuole iniziare a monitorare la policy (es. iniziato a
+    # metà anno): i giorni richiesti/anno si calcolano solo da questa data in poi,
+    # non dal 1° gennaio. None = nessuna restrizione (comportamento storico,
+    # equivalente a partire dal 1° gennaio dell'anno).
+    monitoring_start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

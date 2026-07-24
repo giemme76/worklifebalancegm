@@ -12,6 +12,7 @@ def make_company(
     smart_working_percentage: float | None = None,
     office_days_per_week: int | None = None,
     work_days_per_week: int = 5,
+    monitoring_start_date: date | None = None,
 ) -> Company:
     return Company(
         name="Test Co",
@@ -19,6 +20,7 @@ def make_company(
         smart_working_percentage=smart_working_percentage,
         office_days_per_week=office_days_per_week,
         work_days_per_week=work_days_per_week,
+        monitoring_start_date=monitoring_start_date,
     )
 
 
@@ -173,3 +175,59 @@ def test_simulate_adds_hypothetical_office_days():
     assert result.delta_office_days == 3
     assert result.projected.completed_office_days == 8
     assert result.delta_office_percentage >= 0
+
+
+def test_annual_target_with_no_monitoring_start_date_equals_full_year():
+    company = make_company(smart_working_percentage=40, monitoring_start_date=None)
+    target = calculation_service.calculate_annual_target(company, 2026)
+
+    total = count_working_days_in_year(2026, 5)
+    assert target.total_working_days == total
+
+
+def test_annual_target_with_monitoring_start_date_in_past_year_equals_full_year():
+    # Monitoraggio iniziato in un anno precedente: l'anno richiesto è già "in corso".
+    company = make_company(smart_working_percentage=40, monitoring_start_date=date(2024, 6, 1))
+    target = calculation_service.calculate_annual_target(company, 2026)
+
+    total = count_working_days_in_year(2026, 5)
+    assert target.total_working_days == total
+
+
+def test_annual_target_with_monitoring_start_date_mid_year_is_reduced():
+    company = make_company(smart_working_percentage=40, monitoring_start_date=date(2026, 7, 1))
+    target = calculation_service.calculate_annual_target(company, 2026)
+
+    full_year_total = count_working_days_in_year(2026, 5)
+    assert 0 < target.total_working_days < full_year_total
+
+
+def test_annual_target_with_monitoring_start_date_in_future_year_is_zero():
+    company = make_company(smart_working_percentage=40, monitoring_start_date=date(2027, 1, 1))
+    target = calculation_service.calculate_annual_target(company, 2026)
+
+    assert target.total_working_days == 0
+    assert target.required_office_days == 0
+    assert target.required_smart_days == 0
+
+
+def test_build_dashboard_before_monitoring_start_date_shows_not_started():
+    company = make_company(smart_working_percentage=40, monitoring_start_date=date(2027, 1, 1))
+
+    dashboard = calculation_service.build_dashboard(company, 2026, [], as_of=date(2026, 6, 1))
+
+    assert dashboard.required_office_days == 0
+    assert dashboard.pace == "green"
+    assert dashboard.pace_label == "Monitoraggio non ancora iniziato"
+
+
+def test_build_dashboard_uses_monitoring_start_date_for_pace_elapsed_fraction():
+    # Policy 100% ufficio, monitoraggio iniziato il 1° luglio: a metà della
+    # finestra di monitoraggio (non a metà anno) senza giorni fatti, il ritmo
+    # atteso è più alto che se si contasse dal 1° gennaio.
+    company = make_company(smart_working_percentage=0, monitoring_start_date=date(2026, 7, 1))
+
+    dashboard = calculation_service.build_dashboard(company, 2026, [], as_of=date(2026, 9, 14))
+
+    assert dashboard.pace == "red"
+    assert dashboard.on_track is False

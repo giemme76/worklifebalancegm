@@ -17,6 +17,9 @@ export default function OnboardingFlow() {
   const [policyType, setPolicyType] = useState("PERCENT");
   const [policyPercent, setPolicyPercent] = useState(60);
   const [policyDays, setPolicyDays] = useState(3);
+  const [monitoringStartDate, setMonitoringStartDate] = useState(
+    () => new Date().toISOString().slice(0, 10)
+  );
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -53,6 +56,7 @@ export default function OnboardingFlow() {
         smart_working_percentage: policyType === "PERCENT" ? 100 - policyPercent : undefined,
         office_days_per_week: policyType === "FIXED_DAYS" ? policyDays : undefined,
         work_days_per_week: 5,
+        monitoring_start_date: monitoringStartDate,
       });
     } catch (err) {
       setSubmitError("Non è stato possibile creare la sessione. Riprova.");
@@ -144,6 +148,8 @@ export default function OnboardingFlow() {
           setPolicyPercent={setPolicyPercent}
           policyDays={policyDays}
           setPolicyDays={setPolicyDays}
+          monitoringStartDate={monitoringStartDate}
+          setMonitoringStartDate={setMonitoringStartDate}
           onBack={() => setStep(1)}
           onNext={() => setStep(3)}
         />
@@ -156,6 +162,7 @@ export default function OnboardingFlow() {
           policyType={policyType}
           policyPercent={policyPercent}
           policyDays={policyDays}
+          monitoringStartDate={monitoringStartDate}
           onBack={() => setStep(2)}
           onFinish={finishOnboarding}
           submitting={submitting}
