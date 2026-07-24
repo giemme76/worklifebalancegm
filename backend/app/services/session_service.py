@@ -5,7 +5,7 @@ from app.repositories.company_repository import CompanyRepository
 from app.repositories.session_repository import SessionRepository
 from app.schemas.session import SessionCreateRequest
 from app.services.company_lookup_service import lookup_company
-from app.utils.code_generator import generate_session_code
+from app.utils.code_generator import generate_session_code, normalize_code
 
 _MAX_CODE_ATTEMPTS = 10
 
@@ -39,9 +39,14 @@ def create_session(db: Session, data: SessionCreateRequest) -> UserSession:
 
 
 def get_session_by_code(db: Session, code: str) -> UserSession | None:
-    """Recupera una sessione tramite codice univoco (usato anche per il cookie)."""
+    """Recupera una sessione tramite codice univoco (usato anche per il cookie).
+
+    Normalizza il codice prima del confronto: chi lo recupera lo digita o lo
+    incolla da una tabella/documento, dove autocorrect ed editor sostituiscono
+    spesso il trattino "-" con un trattino Unicode simile (en dash, ecc.),
+    facendo fallire un confronto esatto anche con un codice corretto."""
     session_repo = SessionRepository(db)
-    session = session_repo.get_by_code(code)
+    session = session_repo.get_by_code(normalize_code(code))
     if session is None:
         return None
     session_repo.touch(session)

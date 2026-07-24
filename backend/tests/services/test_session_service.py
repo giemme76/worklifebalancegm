@@ -4,7 +4,7 @@ from app.models.company import Company, PolicyType
 from app.models.session import UserSession
 from app.schemas.session import SessionCreateRequest
 from app.services.session_service import create_session, delete_session, get_session_by_code
-from app.utils.code_generator import generate_session_code, is_valid_code_format
+from app.utils.code_generator import generate_session_code, is_valid_code_format, normalize_code
 
 
 def test_generate_session_code_format():
@@ -78,6 +78,37 @@ def test_get_session_by_code_recupera_sessione_esistente(db_session):
 
 def test_get_session_by_code_ritorna_none_per_codice_non_esistente(db_session):
     assert get_session_by_code(db_session, "SW-0000-0000") is None
+
+
+def test_get_session_by_code_tollera_trattino_unicode_da_copia_incolla(db_session):
+    # Autocorrect di editor/tabelle (Word, Notion, Google Sheets, "trattini
+    # intelligenti" iOS/macOS) sostituisce spesso "-" con un en dash "–":
+    # il recupero deve funzionare comunque, non solo con l'ASCII esatto.
+    data = SessionCreateRequest(name="Acme S.r.l.", smart_working_percentage=40, work_days_per_week=5)
+    created = create_session(db_session, data)
+    pasted_code = created.code.replace("-", "–")  # noqa: RUF001 (en dash intenzionale)
+
+    recovered = get_session_by_code(db_session, pasted_code)
+
+    assert recovered is not None
+    assert recovered.id == created.id
+
+
+def test_get_session_by_code_tollera_minuscolo_e_spazi(db_session):
+    data = SessionCreateRequest(name="Acme S.r.l.", smart_working_percentage=40, work_days_per_week=5)
+    created = create_session(db_session, data)
+    messy_code = f"  {created.code.lower()}  "
+
+    recovered = get_session_by_code(db_session, messy_code)
+
+    assert recovered is not None
+    assert recovered.id == created.id
+
+
+def test_normalize_code_replaces_dash_variants_and_uppercases():
+    assert normalize_code("sw–j6r6–79vy") == "SW-J6R6-79VY"  # noqa: RUF001
+    assert normalize_code("  SW-J6R6-79VY  ") == "SW-J6R6-79VY"
+    assert normalize_code("SW - J6R6 - 79VY") == "SW-J6R6-79VY"
 
 
 def test_create_session_defaults_monitoring_start_date_to_today(db_session):

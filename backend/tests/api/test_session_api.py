@@ -56,6 +56,18 @@ def test_recover_session_with_unknown_code_returns_404(client):
     assert response.status_code == 404
 
 
+def test_recover_session_tolerates_unicode_dash_from_copy_paste(client):
+    created = create_default_session(client)
+    client.cookies.clear()
+    # es. incollato da una tabella con "trattini intelligenti" attivi.
+    pasted_code = created["code"].replace("-", "–")  # noqa: RUF001
+
+    response = client.get(f"/session/{pasted_code}")
+
+    assert response.status_code == 200
+    assert response.json()["code"] == created["code"]
+
+
 def test_create_session_validates_smart_working_percentage(client):
     response = client.post(
         "/session",
