@@ -32,13 +32,18 @@ class AnnualTarget:
     required_smart_days: int
 
 
-def _monitoring_window(company: Company, year: int) -> tuple[date, date] | None:
+def monitoring_window(company: Company, year: int) -> tuple[date, date] | None:
     """Intervallo [inizio, fine] entro cui contare i giorni lavorativi nell'anno dato.
 
     Se `monitoring_start_date` non è impostata, o ricade in un anno precedente
     (il monitoraggio è già iniziato prima), l'intervallo è l'intero anno
     (comportamento storico). Se ricade in un anno futuro rispetto a `year`,
     il monitoraggio non è ancora iniziato in quell'anno: restituisce None.
+
+    Pubblica (non solo uso interno): usata anche da `attendance_service` per
+    escludere dal calcolo dell'obiettivo le presenze registrate prima della
+    data di inizio monitoraggio, se questa viene spostata in avanti dopo che
+    l'utente ha già segnato dei giorni (il "pregresso" non deve contare).
     """
     start = company.monitoring_start_date
     year_start = date(year, 1, 1)
@@ -61,7 +66,7 @@ def calculate_annual_target(company: Company, year: int) -> AnnualTarget:
     Se il monitoraggio non è ancora iniziato in `year` (vedi
     `monitoring_start_date`), l'obiettivo è zero.
     """
-    window = _monitoring_window(company, year)
+    window = monitoring_window(company, year)
     if window is None:
         return AnnualTarget(total_working_days=0, required_office_days=0, required_smart_days=0)
 
@@ -163,7 +168,7 @@ def build_dashboard(
         current_office_percentage = 0.0
         current_smart_percentage = 0.0
 
-    window = _monitoring_window(company, year)
+    window = monitoring_window(company, year)
     if window is None:
         # Il monitoraggio non è ancora iniziato in questo anno (data di inizio
         # nel futuro): nessun obiettivo attivo, niente da segnalare.

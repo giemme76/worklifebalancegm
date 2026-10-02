@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 from app.models.attendance import AttendanceEntry
+from app.models.company import Company
 from app.models.session import UserSession
 from app.repositories.attendance_repository import AttendanceRepository
 from app.schemas.attendance import AttendanceCreate
@@ -33,10 +34,26 @@ def delete_attendance(db: Session, session: UserSession, entry_date: date) -> bo
     return deleted
 
 
+def _types_within_monitoring_window(
+    company: Company, year: int, entries: list[AttendanceEntry]
+) -> list:
+    """Filtra le presenze registrate prima della data di inizio monitoraggio.
+
+    Se l'utente sposta in avanti `monitoring_start_date` dopo aver già
+    segnato dei giorni (es. azienda cambiata, nuova policy da una certa
+    data), quei giorni pregressi non devono contare nell'obiettivo/andamento,
+    anche se restano visibili nel calendario come storico."""
+    window = calculation_service.monitoring_window(company, year)
+    if window is None:
+        return []
+    start, _end = window
+    return [e.type for e in entries if e.date >= start]
+
+
 def get_dashboard(db: Session, session: UserSession, year: int) -> DashboardOut:
     repo = AttendanceRepository(db)
     entries = repo.list_for_year(session.id, year, include_simulated=False)
-    types = [e.type for e in entries]
+    types = _types_within_monitoring_window(session.company, year, entries)
     return calculation_service.build_dashboard(session.company, year, types)
 
 
@@ -60,7 +77,7 @@ def simulate(
     target_year = year or (next(iter(hypothetical_by_year), date.today().year))
 
     real_entries = repo.list_for_year(session.id, target_year, include_simulated=False)
-    real_types = [e.type for e in real_entries]
+    real_types = _types_within_monitoring_window(session.company, target_year, real_entries)
     hypothetical_types = hypothetical_by_year.get(target_year, [])
 
     return calculation_service.simulate(session.company, target_year, real_types, hypothetical_types)

@@ -32,3 +32,29 @@ def test_simulation_projects_future_days_without_persisting(client):
 
     calendar = client.get("/calendar", params={"year": 2026}).json()
     assert len(calendar["entries"]) == 1
+
+
+def test_simulation_excludes_real_attendance_before_new_monitoring_start_date(client):
+    create_default_session(client)
+
+    client.post("/attendance", json={"date": "2026-03-02", "type": "OFFICE"})
+    client.patch(
+        "/company",
+        json={
+            "policy_type": "PERCENT",
+            "smart_working_percentage": 40,
+            "work_days_per_week": 5,
+            "monitoring_start_date": "2026-10-01",
+        },
+    )
+
+    response = client.post(
+        "/simulation",
+        json={"hypothetical_entries": [{"date": "2026-10-05", "type": "OFFICE"}]},
+    )
+    assert response.status_code == 200
+    body = response.json()
+
+    # Il giorno di marzo (pregresso) non entra nella baseline: solo l'ipotetico conta.
+    assert body["projected"]["completed_office_days"] == 1
+    assert body["delta_office_days"] == 1

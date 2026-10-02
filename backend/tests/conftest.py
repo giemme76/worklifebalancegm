@@ -58,12 +58,21 @@ def client(db_session):
 
 
 def create_default_session(client: TestClient, **overrides) -> dict:
-    """Helper: crea una sessione con dati di default, restituisce il body della risposta."""
+    """Helper: crea una sessione con dati di default, restituisce il body della risposta.
+
+    `monitoring_start_date` è fissata al 1° gennaio 2026 (non lasciata al
+    default "oggi" lato schema): molti test registrano presenze su date fisse
+    del 2026, e da quando il calcolo dell'obiettivo rispetta la finestra di
+    monitoraggio, lasciare il default renderebbe i test dipendenti dalla data
+    reale di esecuzione (es. andrebbero in errore se eseguiti dopo le date
+    usate nei fixture). Chi vuole testare la finestra esplicitamente la
+    sovrascrive passando `monitoring_start_date=...`."""
     payload = {
         "name": "Acme S.r.l.",
         "headquarters": "Milano",
         "smart_working_percentage": 40,
         "work_days_per_week": 5,
+        "monitoring_start_date": "2026-01-01",
     }
     payload.update(overrides)
     response = client.post("/session", json=payload)

@@ -36,3 +36,31 @@ def test_dashboard_updates_after_recording_attendance(client):
 
     assert body["completed_office_days"] == 1
     assert body["completed_smart_days"] == 1
+
+
+def test_dashboard_excludes_attendance_registered_before_new_monitoring_start_date(client):
+    # Giorni registrati a marzo, poi l'utente sposta in avanti la data di
+    # inizio monitoraggio a ottobre (es. nuova policy, azienda cambiata): il
+    # pregresso non deve più contare nell'obiettivo/andamento.
+    create_default_session(client, smart_working_percentage=40, work_days_per_week=5)
+
+    client.post("/attendance", json={"date": "2026-03-02", "type": "OFFICE"})
+    client.post("/attendance", json={"date": "2026-03-03", "type": "SMART_WORKING"})
+    client.post("/attendance", json={"date": "2026-10-05", "type": "OFFICE"})
+
+    client.patch(
+        "/company",
+        json={
+            "policy_type": "PERCENT",
+            "smart_working_percentage": 40,
+            "work_days_per_week": 5,
+            "monitoring_start_date": "2026-10-01",
+        },
+    )
+
+    response = client.get("/dashboard", params={"year": 2026})
+    body = response.json()
+
+    # Solo il giorno dopo la nuova data di inizio conta.
+    assert body["completed_office_days"] == 1
+    assert body["completed_smart_days"] == 0
