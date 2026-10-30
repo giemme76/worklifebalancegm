@@ -28,6 +28,8 @@ tipologie di presenza incluso "Trasferta", semaforo verde/arancio/rosso).
 - Simulazione di scenari futuri sull'obiettivo annuale
 - Impostazioni: modifica policy e data di inizio monitoraggio in qualsiasi
   momento dall'icona ingranaggio nell'header dell'app
+- Link "Come funziona" nel footer (modale con la spiegazione dell'app) e SEO di base
+  (meta/Open Graph, dati strutturati, robots.txt, sitemap.xml)
 - Eliminazione sessione e dati collegati su richiesta dell'utente
 
 ## Struttura repo

@@ -28,6 +28,8 @@ including "Travel", green/orange/red progress indicator).
 - Simulation of future scenarios against the annual target
 - Settings: edit policy and monitoring start date at any time from the gear
   icon in the app header
+- "How it works" footer link (modal explaining the app, in Italian) and basic SEO
+  (meta/Open Graph, structured data, robots.txt, sitemap.xml)
 - Deletion of the session and its data on user request
 
 ## Repo structure

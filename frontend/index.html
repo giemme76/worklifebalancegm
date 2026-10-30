@@ -8,6 +8,9 @@
       name="description"
       content="Monitora la tua presenza in ufficio e in smart working: dashboard con obiettivo annuale, calendario, semaforo di andamento e simulazione. Senza registrazione."
     />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Giemme76" />
+    <meta name="theme-color" content="#efece6" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="canonical" href="https://smartworkingmanager.com/" />
 
@@ -23,6 +26,7 @@
     <meta property="og:image" content="https://smartworkingmanager.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Smart Working Manager" />
     <meta property="og:locale" content="it_IT" />
 
     <!-- Twitter / X card -->
@@ -33,6 +37,29 @@
       content="Monitora la tua presenza in ufficio e in smart working: dashboard con obiettivo annuale, calendario, semaforo di andamento e simulazione."
     />
     <meta name="twitter:image" content="https://smartworkingmanager.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Smart Working Manager" />
+
+    <!-- Dati strutturati (schema.org) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Smart Working Manager",
+        "url": "https://smartworkingmanager.com/",
+        "description": "Monitora la tua presenza in ufficio e in smart working: dashboard con obiettivo annuale, calendario, semaforo di andamento e simulazione. Senza registrazione.",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "it",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "image": "https://smartworkingmanager.com/og-image.png",
+        "author": {
+          "@type": "Organization",
+          "name": "Giemme76",
+          "url": "https://giemme76.com/"
+        }
+      }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -43,6 +70,23 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width: 560px; margin: 40px auto; padding: 0 20px; font-family: system-ui, sans-serif; line-height: 1.5">
+        <h1>Smart Working Manager</h1>
+        <p>
+          Smart Working Manager ti aiuta a rispettare la policy di presenza in ufficio della tua
+          azienda: registri le giornate in ufficio, in smart working, ferie, permessi, malattia e
+          trasferta, e vedi a che punto sei rispetto all'obiettivo.
+        </p>
+        <ul>
+          <li>Nessuna registrazione: parti subito con un nickname e un codice di recupero personale.</li>
+          <li>Policy a percentuale o a giorni fissi a settimana, con data di inizio e scadenza.</li>
+          <li>Dashboard con giorni richiesti, fatti e rimanenti, e semaforo di andamento.</li>
+          <li>Calendario annuale e simulazione di scenari futuri.</li>
+        </ul>
+        <p>Per usare l'app è necessario abilitare JavaScript nel browser.</p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
