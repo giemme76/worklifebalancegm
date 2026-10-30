@@ -30,4 +30,9 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  // Test unitari delle utility pure in src/lib (nessun DOM necessario).
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.js"],
+  },
 });

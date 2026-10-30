@@ -2,6 +2,8 @@
 
 *[Versione italiana](README.md)*
 
+[![CI](https://github.com/giemme76/worklifebalancegm/actions/workflows/ci.yml/badge.svg)](https://github.com/giemme76/worklifebalancegm/actions/workflows/ci.yml)
+
 Login-free web app to track compliance with an office / smart-working
 presence policy: 3-step onboarding, dashboard with an annual target and a
 progress indicator, calendar, simulation of future scenarios.

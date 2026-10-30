@@ -23,6 +23,16 @@ in `backend/.env.example`).
 La sessione è gestita dal backend tramite cookie httponly: il browser la
 mantiene automaticamente, non serve alcun login.
 
+## Test
+
+```bash
+npm test   # vitest: utility pure in src/lib (date, anteprima obiettivo)
+```
+
+Backend e frontend sono verificati in CI da GitHub Actions
+(`.github/workflows/ci.yml`) a ogni push su `main` e ad ogni pull request:
+pytest con soglia di coverage al 90% + test frontend + build di produzione.
+
 ## Build di produzione
 
 ```bash
