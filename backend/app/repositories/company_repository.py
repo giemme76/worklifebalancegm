@@ -18,6 +18,7 @@ class CompanyRepository:
             office_days_per_week=data.office_days_per_week,
             work_days_per_week=data.work_days_per_week,
             monitoring_start_date=data.monitoring_start_date,
+            monitoring_end_date=data.monitoring_end_date,
         )
         self.db.add(company)
         self.db.flush()
@@ -32,6 +33,7 @@ class CompanyRepository:
         company.office_days_per_week = data.office_days_per_week
         company.work_days_per_week = data.work_days_per_week
         company.monitoring_start_date = data.monitoring_start_date
+        company.monitoring_end_date = data.monitoring_end_date
         self.db.flush()
         return company
 

@@ -13,6 +13,7 @@ def make_company(
     office_days_per_week: int | None = None,
     work_days_per_week: int = 5,
     monitoring_start_date: date | None = None,
+    monitoring_end_date: date | None = None,
 ) -> Company:
     return Company(
         name="Test Co",
@@ -21,6 +22,7 @@ def make_company(
         office_days_per_week=office_days_per_week,
         work_days_per_week=work_days_per_week,
         monitoring_start_date=monitoring_start_date,
+        monitoring_end_date=monitoring_end_date,
     )
 
 
@@ -232,3 +234,50 @@ def test_build_dashboard_uses_monitoring_start_date_for_pace_elapsed_fraction():
 
     assert dashboard.pace == "red"
     assert dashboard.on_track is False
+
+
+def test_monitoring_end_date_shortens_window_and_target():
+    full = make_company(smart_working_percentage=40)
+    capped = make_company(smart_working_percentage=40, monitoring_end_date=date(2026, 6, 30))
+
+    assert calculation_service.monitoring_window(capped, 2026) == (date(2026, 1, 1), date(2026, 6, 30))
+    full_target = calculation_service.calculate_annual_target(full, 2026)
+    capped_target = calculation_service.calculate_annual_target(capped, 2026)
+    assert 0 < capped_target.total_working_days < full_target.total_working_days
+
+
+def test_monitoring_end_date_in_past_year_means_concluded():
+    company = make_company(smart_working_percentage=40, monitoring_end_date=date(2025, 12, 31))
+
+    dashboard = calculation_service.build_dashboard(company, 2026, [], as_of=date(2026, 3, 1))
+
+    assert dashboard.required_office_days == 0
+    assert dashboard.pace_label == "Monitoraggio concluso"
+    assert dashboard.period_start is None
+
+
+def test_dashboard_exposes_period_and_registered_percentage():
+    company = make_company(
+        smart_working_percentage=40,
+        monitoring_start_date=date(2026, 10, 1),
+        monitoring_end_date=date(2026, 12, 15),
+    )
+    # Dal 1/10 al 9/10/2026 (inclusi) ci sono 7 giorni lavorativi (lun-ven).
+    types = [AttendanceType.OFFICE] * 3 + [AttendanceType.SMART_WORKING] * 2
+
+    dashboard = calculation_service.build_dashboard(company, 2026, types, as_of=date(2026, 10, 9))
+
+    assert dashboard.period_start == date(2026, 10, 1)
+    assert dashboard.period_end == date(2026, 12, 15)
+    assert dashboard.elapsed_working_days == 7
+    assert dashboard.registered_days == 5
+    assert dashboard.registered_percentage == round(5 / 7 * 100, 2)
+
+
+def test_registered_percentage_is_capped_at_100():
+    company = make_company(smart_working_percentage=40)
+    types = [AttendanceType.OFFICE] * 10
+
+    dashboard = calculation_service.build_dashboard(company, 2026, types, as_of=date(2026, 1, 2))
+
+    assert dashboard.registered_percentage == 100.0

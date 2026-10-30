@@ -43,18 +43,29 @@ def _types_within_monitoring_window(
     segnato dei giorni (es. azienda cambiata, nuova policy da una certa
     data), quei giorni pregressi non devono contare nell'obiettivo/andamento,
     anche se restano visibili nel calendario come storico."""
+    return [e.type for e in _entries_within_monitoring_window(company, year, entries)]
+
+
+def _entries_within_monitoring_window(
+    company: Company, year: int, entries: list[AttendanceEntry]
+) -> list[AttendanceEntry]:
+    """Presenze comprese tra inizio e scadenza del monitoraggio (estremi inclusi)."""
     window = calculation_service.monitoring_window(company, year)
     if window is None:
         return []
-    start, _end = window
-    return [e.type for e in entries if e.date >= start]
+    start, end = window
+    return [e for e in entries if start <= e.date <= end]
 
 
 def get_dashboard(db: Session, session: UserSession, year: int) -> DashboardOut:
     repo = AttendanceRepository(db)
     entries = repo.list_for_year(session.id, year, include_simulated=False)
-    types = _types_within_monitoring_window(session.company, year, entries)
-    return calculation_service.build_dashboard(session.company, year, types)
+    in_window = _entries_within_monitoring_window(session.company, year, entries)
+    types = [e.type for e in in_window]
+    registered_to_date = sum(1 for e in in_window if e.date <= date.today())
+    return calculation_service.build_dashboard(
+        session.company, year, types, registered_days_to_date=registered_to_date
+    )
 
 
 def get_calendar(db: Session, session: UserSession, year: int) -> CalendarOut:

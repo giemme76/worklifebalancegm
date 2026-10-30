@@ -132,3 +132,23 @@ def test_update_company_settings_reflects_in_dashboard(client):
     # Con policy 100% ufficio e monitoraggio da luglio, il totale richiesto è
     # ridotto rispetto all'anno intero.
     assert body["required_office_days"] < 260
+
+
+def test_update_company_settings_accepts_end_date_and_rejects_inverted_range(client):
+    create_default_session(client)
+    base = {
+        "policy_type": "PERCENT",
+        "smart_working_percentage": 40,
+        "work_days_per_week": 5,
+        "monitoring_start_date": "2026-10-01",
+    }
+
+    ok = client.patch("/company", json={**base, "monitoring_end_date": "2026-12-15"})
+    assert ok.status_code == 200
+    assert ok.json()["monitoring_end_date"] == "2026-12-15"
+
+    bad = client.patch("/company", json={**base, "monitoring_end_date": "2026-09-01"})
+    assert bad.status_code == 422
+
+    cleared = client.patch("/company", json=base)
+    assert cleared.json()["monitoring_end_date"] is None

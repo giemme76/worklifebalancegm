@@ -44,6 +44,9 @@ class Company(Base):
     # equivalente a partire dal 1° gennaio dell'anno).
     monitoring_start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
 
+    # Scadenza entro cui raggiungere l'obiettivo. None = fine anno (31/12).
+    monitoring_end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     sessions: Mapped[list["UserSession"]] = relationship(back_populates="company")

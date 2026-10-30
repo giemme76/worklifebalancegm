@@ -16,12 +16,18 @@ export default function CompanySettingsSheet({ onClose }) {
     company?.monitoring_start_date || new Date().toISOString().slice(0, 10)
   );
 
+  // Vuota = scadenza a fine anno.
+  const [monitoringEndDate, setMonitoringEndDate] = useState(company?.monitoring_end_date || "");
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   const isPercent = policyType === "PERCENT";
 
+  const endBeforeStart = monitoringEndDate !== "" && monitoringEndDate < monitoringStartDate;
+
   const handleSave = async () => {
+    if (endBeforeStart) return;
     setSaving(true);
     setError(null);
     try {
@@ -31,6 +37,7 @@ export default function CompanySettingsSheet({ onClose }) {
         office_days_per_week: !isPercent ? policyDays : undefined,
         work_days_per_week: company?.work_days_per_week || 5,
         monitoring_start_date: monitoringStartDate,
+        monitoring_end_date: monitoringEndDate || null,
       });
       onClose();
     } catch {
@@ -136,6 +143,37 @@ export default function CompanySettingsSheet({ onClose }) {
           />
         </div>
 
+        <div className="bg-white border-[1.5px] border-line rounded-2xl p-5 mb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="text-[13px] text-muted font-semibold">Scadenza (entro il)</div>
+            {monitoringEndDate && (
+              <button
+                type="button"
+                onClick={() => setMonitoringEndDate("")}
+                className="border-none bg-transparent text-xs font-bold text-office"
+              >
+                Fine anno
+              </button>
+            )}
+          </div>
+          <div className="text-xs text-muted mb-3">
+            Entro quando raggiungere l'obiettivo. Vuota = 31 dicembre.
+          </div>
+          <input
+            type="date"
+            value={monitoringEndDate}
+            min={monitoringStartDate}
+            onChange={(e) => setMonitoringEndDate(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border-[1.5px] border-line text-sm font-semibold
+                       text-ink bg-white outline-none focus:border-ink transition-colors"
+          />
+          {endBeforeStart && (
+            <div className="text-xs font-semibold text-pace-red mt-2">
+              La scadenza non può precedere la data di inizio.
+            </div>
+          )}
+        </div>
+
         {error && <div className="text-xs font-semibold text-pace-red mb-3">{error}</div>}
 
         <div className="flex gap-2.5">
@@ -150,7 +188,7 @@ export default function CompanySettingsSheet({ onClose }) {
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || endBeforeStart}
             className="flex-1 p-4 rounded-2xl border-none font-extrabold text-[15px] text-white bg-ink disabled:opacity-60"
           >
             {saving ? "Salvataggio…" : "Salva"}

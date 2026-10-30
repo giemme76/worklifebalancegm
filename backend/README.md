@@ -122,6 +122,8 @@ la usa risponde 500:
 ALTER TABLE nome_tabella ADD COLUMN nome_colonna TIPO NULL;
 -- Per la data di inizio monitoraggio (impostazioni azienda):
 ALTER TABLE companies ADD COLUMN monitoring_start_date DATE NULL;
+-- Per la scadenza modificabile ("entro il..."):
+ALTER TABLE companies ADD COLUMN monitoring_end_date DATE NULL;
 ```
 
 In alternativa, valutare migrazioni esplicite (es. Alembic) prima di

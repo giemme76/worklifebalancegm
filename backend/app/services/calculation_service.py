@@ -42,6 +42,9 @@ def monitoring_window(company: Company, year: int) -> tuple[date, date] | None:
     (il monitoraggio è già iniziato prima), l'intervallo è l'intero anno
     (comportamento storico). Se ricade in un anno futuro rispetto a `year`,
     il monitoraggio non è ancora iniziato in quell'anno: restituisce None.
+    Se `monitoring_end_date` (scadenza) cade nell'anno, la finestra termina
+    lì invece che al 31/12; se è in un anno precedente, il monitoraggio è
+    concluso (None).
 
     Pubblica (non solo uso interno): usata anche da `attendance_service` per
     escludere dal calcolo dell'obiettivo le presenze registrate prima della
@@ -49,14 +52,21 @@ def monitoring_window(company: Company, year: int) -> tuple[date, date] | None:
     l'utente ha già segnato dei giorni (il "pregresso" non deve contare).
     """
     start = company.monitoring_start_date
+    end = company.monitoring_end_date
     year_start = date(year, 1, 1)
     year_end = date(year, 12, 31)
 
-    if start is None or start.year < year:
-        return year_start, year_end
-    if start.year > year:
+    if start is not None and start.year > year:
         return None
-    return start, year_end
+    # Scadenza già trascorsa prima di quest'anno: il monitoraggio è concluso.
+    if end is not None and end.year < year:
+        return None
+
+    window_start = start if (start is not None and start.year == year) else year_start
+    window_end = end if (end is not None and end.year == year) else year_end
+    if window_start > window_end:
+        return None
+    return window_start, window_end
 
 
 def calculate_annual_target(company: Company, year: int) -> AnnualTarget:
@@ -151,11 +161,17 @@ def build_dashboard(
     year: int,
     attendance_types: Iterable[AttendanceType],
     as_of: date | None = None,
+    registered_days_to_date: int | None = None,
 ) -> DashboardOut:
-    """Calcola l'andamento rispetto all'obiettivo annuale in base alle presenze registrate."""
+    """Calcola l'andamento rispetto all'obiettivo annuale in base alle presenze registrate.
+
+    `registered_days_to_date`: giorni registrati (qualsiasi tipo) fino alla data
+    di riferimento; se omesso si usano tutte le presenze passate."""
     target = calculate_annual_target(company, year)
     types = list(attendance_types)
     reference_date = as_of or date.today()
+    if registered_days_to_date is None:
+        registered_days_to_date = len(types)
 
     completed_office_days = sum(1 for t in types if t in _OFFICE_TYPES)
     completed_smart_days = sum(1 for t in types if t == AttendanceType.SMART_WORKING)
@@ -172,12 +188,20 @@ def build_dashboard(
         current_smart_percentage = 0.0
 
     window = monitoring_window(company, year)
+    period_start: date | None = None
+    period_end: date | None = None
+    elapsed_working_days = 0
     if window is None:
-        # Il monitoraggio non è ancora iniziato in questo anno (data di inizio
-        # nel futuro): nessun obiettivo attivo, niente da segnalare.
-        pace, pace_label = "green", "Monitoraggio non ancora iniziato"
+        # Nessuna finestra attiva in questo anno: o l'inizio è nel futuro o la
+        # scadenza è già passata. Niente da segnalare.
+        started_later = (
+            company.monitoring_start_date is not None and company.monitoring_start_date.year > year
+        )
+        pace = "green"
+        pace_label = "Monitoraggio non ancora iniziato" if started_later else "Monitoraggio concluso"
     else:
         start, end = window
+        period_start, period_end = start, end
         pace, pace_label = _compute_pace(
             required_office_days=target.required_office_days,
             completed_office_days=completed_office_days,
@@ -185,6 +209,15 @@ def build_dashboard(
             end=end,
             as_of=reference_date,
         )
+        elapsed_end = min(end, reference_date)
+        elapsed_working_days = count_working_days_in_range(
+            start, elapsed_end, company.work_days_per_week
+        )
+
+    if elapsed_working_days > 0:
+        registered_percentage = min(100.0, registered_days_to_date / elapsed_working_days * 100)
+    else:
+        registered_percentage = 0.0
 
     return DashboardOut(
         year=year,
@@ -200,6 +233,11 @@ def build_dashboard(
         pace=pace,
         pace_label=pace_label,
         on_track=pace != "red",
+        period_start=period_start,
+        period_end=period_end,
+        elapsed_working_days=elapsed_working_days,
+        registered_days=registered_days_to_date,
+        registered_percentage=round(registered_percentage, 2),
     )
 
 

@@ -1,5 +1,10 @@
 import { useSession } from "../../context/SessionContext.jsx";
-import { addDays, dateKey, todayKey, WD_SHORT } from "../../lib/dateUtils.js";
+import { addDays, dateKey, ITA_MONTHS, parseDateKey, todayKey, WD_SHORT } from "../../lib/dateUtils.js";
+
+function formatLongDate(key) {
+  const d = parseDateKey(key);
+  return `${d.getDate()} ${ITA_MONTHS[d.getMonth()].toLowerCase()} ${d.getFullYear()}`;
+}
 import { LINE_COLOR_VALUE, PACE_COLOR_VALUES, PACE_META, STATUS_DEFS } from "../../lib/statusDefs.js";
 
 export default function Dashboard({ year, onOpenSheet }) {
@@ -61,6 +66,11 @@ export default function Dashboard({ year, onOpenSheet }) {
           <div className={`w-[7px] h-[7px] rounded-full ${paceMeta.bg}`} />
           <div className={`text-[12.5px] font-bold ${paceMeta.text}`}>{dashboard.pace_label}</div>
         </div>
+        {dashboard.period_end && (
+          <div className="text-[12.5px] text-muted font-semibold mt-3">
+            Entro il <span className="text-ink font-bold">{formatLongDate(dashboard.period_end)}</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-2.5 mb-[18px]">
@@ -68,6 +78,18 @@ export default function Dashboard({ year, onOpenSheet }) {
         <StatBox value={dashboard.required_office_days} label="Richiesti" />
         <StatBox value={dashboard.missing_office_days} label="Rimanenti" />
       </div>
+
+      {dashboard.elapsed_working_days > 0 && (
+        <div className="flex items-center justify-between bg-surface border-[1.5px] border-line rounded-2xl px-4 py-3 mb-[18px]">
+          <div>
+            <div className="text-[12.5px] font-bold">Giorni registrati fino a oggi</div>
+            <div className="text-[11px] text-muted font-semibold mt-0.5">
+              {dashboard.registered_days} su {dashboard.elapsed_working_days} lavorativi
+            </div>
+          </div>
+          <div className="text-xl font-extrabold">{Math.round(dashboard.registered_percentage)}%</div>
+        </div>
+      )}
 
       <SectionLabel>Registra oggi</SectionLabel>
       <div className="grid grid-cols-3 gap-2 mb-5">

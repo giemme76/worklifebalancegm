@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel
@@ -26,3 +27,12 @@ class DashboardOut(BaseModel):
     pace_label: str
 
     on_track: bool
+
+    # Finestra di monitoraggio dell'anno (None se non attiva) e copertura delle
+    # registrazioni: giorni registrati fino a oggi sui giorni lavorativi già
+    # trascorsi dall'inizio della finestra.
+    period_start: date | None = None
+    period_end: date | None = None
+    elapsed_working_days: int = 0
+    registered_days: int = 0
+    registered_percentage: float = 0.0

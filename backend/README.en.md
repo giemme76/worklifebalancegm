@@ -124,6 +124,8 @@ uses it returns 500:
 ALTER TABLE table_name ADD COLUMN column_name TYPE NULL;
 -- For the monitoring start date (company settings):
 ALTER TABLE companies ADD COLUMN monitoring_start_date DATE NULL;
+-- For the editable deadline ("by..."):
+ALTER TABLE companies ADD COLUMN monitoring_end_date DATE NULL;
 ```
 
 Alternatively, consider explicit migrations (e.g. Alembic) before

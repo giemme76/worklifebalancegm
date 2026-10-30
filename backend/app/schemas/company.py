@@ -20,6 +20,12 @@ def _validate_policy_fields(model: "CompanySetup | CompanySettingsUpdate"):
             )
         if model.office_days_per_week > model.work_days_per_week:
             raise ValueError("office_days_per_week non può superare work_days_per_week")
+    if (
+        model.monitoring_end_date is not None
+        and model.monitoring_start_date is not None
+        and model.monitoring_end_date < model.monitoring_start_date
+    ):
+        raise ValueError("monitoring_end_date non può precedere monitoring_start_date")
     return model
 
 
@@ -62,6 +68,8 @@ class CompanyOut(BaseModel):
     work_days_per_week: int
     # None solo per aziende create prima dell'introduzione di questo campo.
     monitoring_start_date: date | None = None
+    # None = scadenza a fine anno.
+    monitoring_end_date: date | None = None
 
     model_config = {"from_attributes": True}
 
@@ -81,6 +89,8 @@ class CompanySetup(BaseModel):
 
     # Data da cui iniziare a monitorare la policy (scelta in onboarding, default oggi).
     monitoring_start_date: date = Field(default_factory=date.today)
+    # Scadenza opzionale; se assente l'obiettivo vale fino a fine anno.
+    monitoring_end_date: date | None = None
 
     @model_validator(mode="after")
     def _check_policy_fields(self) -> "CompanySetup":
@@ -96,6 +106,7 @@ class CompanySettingsUpdate(BaseModel):
     office_days_per_week: int | None = Field(default=None, ge=1, le=7)
     work_days_per_week: int = Field(ge=1, le=7, default=5)
     monitoring_start_date: date
+    monitoring_end_date: date | None = None
 
     @model_validator(mode="after")
     def _check_policy_fields(self) -> "CompanySettingsUpdate":
