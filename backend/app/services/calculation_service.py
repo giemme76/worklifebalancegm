@@ -15,14 +15,17 @@ from app.schemas.dashboard import DashboardOut, Pace
 from app.schemas.simulation import SimulationOut
 from app.utils.date_utils import count_working_days_in_range
 
-# Ferie, permessi, malattia e trasferta non contano né come presenza in ufficio
-# né come smart working ai fini del calcolo dell'obiettivo.
+# Ferie, permessi e malattia non contano né come presenza in ufficio né come
+# smart working ai fini del calcolo dell'obiettivo.
 _OTHER_TYPES = {
     AttendanceType.VACATION,
     AttendanceType.PERMIT,
     AttendanceType.SICK,
-    AttendanceType.TRAVEL,
 }
+
+# La trasferta è lavoro fuori sede ma non è smart working: conta come giorno
+# di presenza in ufficio nel calcolo dell'obiettivo (scelta di prodotto).
+_OFFICE_TYPES = {AttendanceType.OFFICE, AttendanceType.TRAVEL}
 
 
 @dataclass(frozen=True)
@@ -154,7 +157,7 @@ def build_dashboard(
     types = list(attendance_types)
     reference_date = as_of or date.today()
 
-    completed_office_days = sum(1 for t in types if t == AttendanceType.OFFICE)
+    completed_office_days = sum(1 for t in types if t in _OFFICE_TYPES)
     completed_smart_days = sum(1 for t in types if t == AttendanceType.SMART_WORKING)
     other_days = sum(1 for t in types if t in _OTHER_TYPES)
 

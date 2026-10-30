@@ -151,16 +151,17 @@ def test_build_calendar_counts_including_travel():
     assert counts.travel == 1
 
 
-def test_travel_days_count_as_other_not_office_or_smart():
+def test_travel_days_count_as_office_days():
     company = make_company(smart_working_percentage=40)
-    types = [AttendanceType.TRAVEL] * 3
+    types = [AttendanceType.TRAVEL] * 3 + [AttendanceType.OFFICE] * 2 + [AttendanceType.SMART_WORKING]
 
     dashboard = calculation_service.build_dashboard(
         company, 2026, types, as_of=date(2026, 3, 1)
     )
-    assert dashboard.completed_office_days == 0
-    assert dashboard.completed_smart_days == 0
-    assert dashboard.other_days == 3
+    assert dashboard.completed_office_days == 5
+    assert dashboard.completed_smart_days == 1
+    assert dashboard.other_days == 0
+    assert dashboard.current_office_percentage == round(5 / 6 * 100, 2)
 
 
 def test_simulate_adds_hypothetical_office_days():

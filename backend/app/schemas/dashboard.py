@@ -14,7 +14,7 @@ class DashboardOut(BaseModel):
 
     completed_office_days: int
     completed_smart_days: int
-    other_days: int  # ferie, permessi, malattia, trasferta
+    other_days: int  # ferie, permessi, malattia (la trasferta conta come ufficio)
 
     missing_office_days: int
     current_office_percentage: float
